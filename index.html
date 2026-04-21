@@ -3,193 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farmacia Vibracional V3 FINAL</title>
+    <title>Farmacia Vibracional Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        input[type=range] { accent-color: #4f46e5; cursor: pointer; }
-        .session-card { transition: all 0.2s; border-left: 4px solid #4f46e5; }
-        .session-card:active { transform: scale(0.98); }
-        body { -webkit-tap-highlight-color: transparent; }
+        input[type=range] { accent-color: #6366f1; cursor: pointer; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .session-card { border-left: 4px solid #6366f1; transition: all 0.2s; }
+        .session-card:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 font-sans">
+<body class="bg-gradient-to-br from-slate-900 to-indigo-950 min-h-screen flex items-center justify-center p-4 font-sans">
 
-    <div class="max-w-md mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-slate-100">
-        <div class="bg-indigo-600 p-6 text-white text-center">
+    <div id="pin-screen" class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center glass-card">
+        <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="text-3xl">🔐</span>
+        </div>
+        <h1 class="text-2xl font-black text-slate-800 mb-2">SISTEMA PRIVADO</h1>
+        <p class="text-slate-500 text-sm mb-6">Ingresa tu código de acceso</p>
+        <input type="password" id="pin-input" placeholder="••••" class="w-full text-center text-3xl tracking-[1em] p-4 border-2 border-slate-100 rounded-2xl mb-4 outline-none focus:border-indigo-500 transition-all">
+        <button onclick="checkPin()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 active:scale-95 transition-all">ACCEDER</button>
+        <p id="pin-error" class="text-red-500 text-xs mt-4 hidden font-bold">⚠️ PIN INCORRECTO</p>
+    </div>
+
+    <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white/20">
+        <div class="bg-indigo-600 p-8 text-white text-center relative">
             <h1 class="text-2xl font-black italic tracking-tighter">FARMACIA VIBRACIONAL</h1>
-            <div id="status-light" class="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></div>
-            <span class="text-[10px] uppercase font-bold opacity-70">Sistema de Bio-Resonancia</span>
+            <div class="flex items-center justify-center gap-2 mt-1">
+                <div id="status-light" class="w-2 h-2 rounded-full bg-red-400"></div>
+                <span class="text-[10px] uppercase font-bold tracking-[0.2em] opacity-80">Bio-Resonancia Activa</span>
+            </div>
         </div>
 
         <div class="p-6 space-y-6">
-            <div class="text-center">
-                <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Frecuencia Principal (Hz)</label>
-                <input type="number" id="freq-input" value="528" step="0.01" oninput="updateParams()" 
-                       class="w-full text-5xl font-mono text-center outline-none py-2 text-slate-800 bg-transparent">
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="setFreq(396)" class="text-[9px] font-bold p-2 bg-slate-50 rounded-lg border hover:bg-indigo-50 transition-colors">UT 396Hz</button>
+                <button onclick="setFreq(417)" class="text-[9px] font-bold p-2 bg-slate-50 rounded-lg border hover:bg-indigo-50 transition-colors">RE 417Hz</button>
+                <button onclick="setFreq(528)" class="text-[9px] font-bold p-2 bg-indigo-50 border-indigo-200 border rounded-lg hover:bg-indigo-100 transition-colors">MI 528Hz</button>
+                <button onclick="setFreq(639)" class="text-[9px] font-bold p-2 bg-slate-50 rounded-lg border hover:bg-indigo-50 transition-colors">FA 639Hz</button>
+                <button onclick="setFreq(741)" class="text-[9px] font-bold p-2 bg-slate-50 rounded-lg border hover:bg-indigo-50 transition-colors">SOL 741Hz</button>
+                <button onclick="setFreq(852)" class="text-[9px] font-bold p-2 bg-slate-50 rounded-lg border hover:bg-indigo-50 transition-colors">LA 852Hz</button>
             </div>
 
-            <div class="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div class="bg-slate-900 rounded-3xl p-6 text-center shadow-inner">
+                <label class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1 block">Frecuencia Principal</label>
+                <input type="number" id="freq-input" value="528" step="0.01" oninput="updateParams()" 
+                       class="bg-transparent w-full text-5xl font-mono text-indigo-400 outline-none text-center">
+                <span class="text-indigo-800 text-[10px] font-bold">HERTZ (Hz)</span>
+            </div>
+
+            <div class="space-y-4 px-2">
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2">
                         <span>Volumen</span> <span id="vol-txt">60%</span>
                     </div>
                     <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.6" oninput="updateParams()" class="w-full">
                 </div>
-
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                        <span>Separación Binaural (Diferencia)</span> <span id="bin-txt">0%</span>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2">
+                        <span>Separación Binaural</span> <span id="bin-txt">0%</span>
                     </div>
                     <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateParams()" class="w-full">
-                    <p class="text-[9px] text-slate-400 mt-1">Suma hasta +20Hz a la frecuencia base</p>
                 </div>
             </div>
 
             <button id="play-btn" onclick="toggleTerapia()" 
-                    class="w-full py-6 bg-slate-900 text-white rounded-2xl text-xl font-black shadow-xl transition-all active:scale-95">
+                    class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-xl active:scale-95 transition-all">
                 INICIAR TERAPIA
             </button>
 
             <div class="pt-4 border-t border-slate-100">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guardar en Mi Botiquín</label>
-                <div class="flex gap-2 mt-2">
-                    <input type="text" id="session-name" placeholder="Nombre (ej: Rinitis)" 
-                           class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-indigo-200">
-                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold hover:bg-indigo-700 shadow-md">+</button>
+                <div class="flex items-center justify-between mb-3">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mi Botiquín</label>
                 </div>
-                
-                <div id="sessions-list" class="mt-4 grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
-                    </div>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="session-name" placeholder="Nombre de sesión..." class="flex-1 bg-slate-50 border rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 ring-indigo-100">
+                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-4 rounded-xl font-bold">+</button>
+                </div>
+                <div id="sessions-list" class="space-y-2 max-h-40 overflow-y-auto pr-2"></div>
             </div>
         </div>
     </div>
 
     <script>
-        let audioCtx = null;
-        let mainOsc = null;
-        let mainGain = null;
-        let isRunning = false;
+        const MI_PIN = "AGUSTIN"; // <-- TU PIN
+        let audioCtx = null, mainOsc = null, mainGain = null, isRunning = false;
 
-        // Inicia el audio una sola vez para evitar bloqueos
+        function checkPin() {
+            const input = document.getElementById('pin-input').value.toUpperCase();
+            if(input === MI_PIN) {
+                document.getElementById('pin-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+            } else {
+                document.getElementById('pin-error').classList.remove('hidden');
+                setTimeout(() => document.getElementById('pin-error').classList.add('hidden'), 2000);
+            }
+        }
+
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 mainOsc = audioCtx.createOscillator();
                 mainGain = audioCtx.createGain();
-                
                 mainOsc.type = 'sine';
-                mainGain.gain.setValueAtTime(0, audioCtx.currentTime); // Inicia en silencio absoluto
-                
+                mainGain.gain.setValueAtTime(0, audioCtx.currentTime);
                 mainOsc.connect(mainGain);
                 mainGain.connect(audioCtx.destination);
                 mainOsc.start();
             }
         }
 
-        // Actualiza los valores de la pantalla y el sonido en tiempo real
+        function setFreq(hz) {
+            document.getElementById('freq-input').value = hz;
+            updateParams();
+        }
+
         function updateParams() {
             const vol = document.getElementById('vol-input').value;
             const bin = document.getElementById('bin-input').value;
             const freq = parseFloat(document.getElementById('freq-input').value) || 0;
             
-            // Actualizar textos de porcentaje
             document.getElementById('vol-txt').innerText = Math.round(vol * 100) + "%";
             document.getElementById('bin-txt').innerText = Math.round((bin / 20) * 100) + "%";
             
             if (mainOsc && mainGain) {
-                // Cambiar frecuencia suavemente para que no haga "clics"
                 mainOsc.frequency.setTargetAtTime(freq + parseFloat(bin), audioCtx.currentTime, 0.05);
-                
-                // Si está encendido, aplicar el volumen actual
-                if (isRunning) {
-                    mainGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.05);
-                }
+                if (isRunning) mainGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.05);
             }
         }
 
         function toggleTerapia() {
-            initAudio(); // Asegura que el motor esté listo
+            initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const btn = document.getElementById('play-btn');
             const light = document.getElementById('status-light');
 
             if (!isRunning) {
                 isRunning = true;
-                const currentVol = document.getElementById('vol-input').value;
-                mainGain.gain.setTargetAtTime(currentVol, audioCtx.currentTime, 0.1);
-                
+                mainGain.gain.setTargetAtTime(document.getElementById('vol-input').value, audioCtx.currentTime, 0.1);
                 btn.innerText = "DETENER TERAPIA";
                 btn.classList.replace('bg-slate-900', 'bg-red-600');
                 light.classList.replace('bg-red-400', 'bg-green-400');
-                light.classList.add('animate-pulse');
             } else {
                 isRunning = false;
                 mainGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                
                 btn.innerText = "INICIAR TERAPIA";
                 btn.classList.replace('bg-red-600', 'bg-slate-900');
                 light.classList.replace('bg-green-400', 'bg-red-400');
-                light.classList.remove('animate-pulse');
             }
         }
 
-        // --- SISTEMA DE BOTIQUÍN (GUARDAR SESIONES) ---
         function saveSession() {
-            const nameInput = document.getElementById('session-name');
-            if (!nameInput.value) return;
-
-            const session = {
-                name: nameInput.value,
-                freq: document.getElementById('freq-input').value,
-                bin: document.getElementById('bin-input').value
-            };
-
-            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
-            sessions.push(session);
-            localStorage.setItem('farmacia_vibracional_v3', JSON.stringify(sessions));
-            
-            nameInput.value = "";
+            const name = document.getElementById('session-name').value || "Sesión";
+            const session = { name, freq: document.getElementById('freq-input').value, bin: document.getElementById('bin-input').value };
+            let saved = JSON.parse(localStorage.getItem('farmacia_v4') || '[]');
+            saved.push(session);
+            localStorage.setItem('farmacia_v4', JSON.stringify(saved));
+            document.getElementById('session-name').value = "";
             renderSessions();
         }
 
         function renderSessions() {
             const list = document.getElementById('sessions-list');
-            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
-            
-            if (sessions.length === 0) {
-                list.innerHTML = '<p class="text-[10px] text-slate-300 text-center py-4 italic">Tu botiquín está vacío</p>';
-                return;
-            }
-
-            list.innerHTML = sessions.map((s, index) => `
-                <div class="session-card flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-slate-100">
-                    <div class="cursor-pointer flex-1" onclick="loadSession(${index})">
-                        <p class="font-bold text-sm text-slate-700 uppercase tracking-tight">${s.name}</p>
-                        <p class="text-[10px] text-indigo-500 font-mono">${s.freq} Hz + ${s.bin} Hz de diferencia</p>
+            const saved = JSON.parse(localStorage.getItem('farmacia_v4') || '[]');
+            list.innerHTML = saved.map((s, i) => `
+                <div class="session-card bg-slate-50 p-3 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
+                    <div class="cursor-pointer flex-1" onclick="loadSession(${i})">
+                        <p class="font-black text-xs text-slate-700 uppercase tracking-tight">${s.name}</p>
+                        <p class="text-[9px] text-indigo-600 font-mono font-bold">${s.freq}Hz + ${s.bin}Hz</p>
                     </div>
-                    <button onclick="deleteSession(${index})" class="text-slate-300 hover:text-red-500 text-lg font-bold px-2">×</button>
+                    <button onclick="deleteSession(${i})" class="text-slate-300 hover:text-red-500 font-bold px-2">✕</button>
                 </div>
             `).join('');
         }
 
-        function loadSession(index) {
-            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
-            const s = sessions[index];
-            document.getElementById('freq-input').value = s.freq;
-            document.getElementById('bin-input').value = s.bin;
+        function loadSession(i) {
+            const saved = JSON.parse(localStorage.getItem('farmacia_v4') || '[]');
+            document.getElementById('freq-input').value = saved[i].freq;
+            document.getElementById('bin-input').value = saved[i].bin;
             updateParams();
-            // Si está sonando, se actualiza solo. Si no, espera al play.
         }
 
-        function deleteSession(index) {
-            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
-            sessions.splice(index, 1);
-            localStorage.setItem('farmacia_vibracional_v3', JSON.stringify(sessions));
+        function deleteSession(i) {
+            let saved = JSON.parse(localStorage.getItem('farmacia_v4') || '[]');
+            saved.splice(i, 1);
+            localStorage.setItem('farmacia_v4', JSON.stringify(saved));
             renderSessions();
         }
 
-        // Cargar botiquín al iniciar
         renderSessions();
     </script>
 </body>

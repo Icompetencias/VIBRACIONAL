@@ -3,294 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farmacia Vibracional</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Farmacia Vibracional | Audio Reforzado</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        /* Animaciones personalizadas para emular animate-in */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes slideInFromTop { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-in { animation: fadeIn 0.3s ease-out forwards; }
-        .fade-in { animation-name: fadeIn; }
-        .zoom-in { animation-name: zoomIn; }
-        .slide-in-from-top-1 { animation: slideInFromTop 0.2s ease-out forwards; }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         input[type="range"] { accent-color: #4f46e5; }
+        /* Placeholder para iconos Lucide */
+        i[data-lucide] { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
     </style>
 </head>
-<body class="bg-zinc-50">
+<body class="bg-zinc-50 overflow-x-hidden">
     <div id="root"></div>
 
-    <!-- Scripts: React, Babel (para JSX), Lucide -->
+    <!-- Scripts Esenciales CDNs -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script type="text/babel">
-        const { useState, useRef, useEffect, useMemo } = React;
+        const { useState, useRef, useEffect, useCallback } = React;
 
-        // Helper para renderizar iconos de Lucide en modo Standalone
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const iconRef = useRef(null);
-            useEffect(() => {
-                if (iconRef.current) {
-                    lucide.createIcons({
-                        attrs: {
-                            class: className,
-                            width: size,
-                            height: size,
-                            "stroke-width": 2
-                        },
-                        name: name,
-                        element: iconRef.current
-                    });
-                }
-            }, [name, size, className]);
-            return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
-        };
+        // --- COMPONENTE DE ICONO ---
+        const Icon = ({ name, size = 20, className = "" }) => (
+            <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>
+        );
 
         function App() {
             // --- ESTADOS ---
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [pinEntry, setPinEntry] = useState('');
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [audioState, setAudioState] = useState('uninitialized'); // 'uninitialized', 'suspended', 'running'
+            const [error, setError] = useState('');
+            
+            // Parametros de audio
             const [frequenciesInput, setFrequenciesInput] = useState('440, 528');
             const [duration, setDuration] = useState(5);
             const [volume, setVolume] = useState(0.5);
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [isRecording, setIsRecording] = useState(false);
-            const [recordingFormat, setRecordingFormat] = useState('wav');
             const [binauralPan, setBinauralPan] = useState(0.8);
-            const [savedProtocols, setSavedProtocols] = useState([]);
-            const [isSaving, setIsSaving] = useState(false);
-            const [newProtocolName, setNewProtocolName] = useState('');
-            const [isAuthenticated, setIsAuthenticated] = useState(false);
-            const [pinEntry, setPinEntry] = useState('');
-            const [error, setError] = useState('');
 
             // --- REFS ---
             const audioContextRef = useRef(null);
             const oscillatorsRef = useRef([]);
-            const gainNodeRef = useRef(null);
-            const masterGainNodeRef = useRef(null);
-            const pannerNodeRef = useRef(null);
-            const compressorNodeRef = useRef(null);
-            const timerRef = useRef(null);
-            const mediaRecorderRef = useRef(null);
+            const masterGainRef = useRef(null);
+            const visualiserAnalyserRef = useRef(null);
             const canvasRef = useRef(null);
-            const analyserRef = useRef(null);
             const animationFrameRef = useRef(null);
-            const recordedChunksRef = useRef([]);
-            const stopStateTimeoutRef = useRef(null);
+            const timerRef = useRef(null);
 
-            const presets = [
-                { name: 'UT - 396 Hz', freq: [396], color: 'bg-red-100 text-red-700' },
-                { name: 'RE - 417 Hz', freq: [417], color: 'bg-orange-100 text-orange-700' },
-                { name: 'MI - 528 Hz', freq: [528], color: 'bg-yellow-100 text-yellow-700' },
-                { name: 'FA - 639 Hz', freq: [639], color: 'bg-green-100 text-green-700' },
-                { name: 'SOL - 741 Hz', freq: [741], color: 'bg-blue-100 text-blue-700' },
-                { name: 'LA - 852 Hz', freq: [852], color: 'bg-indigo-100 text-indigo-700' },
-                { name: 'Schumann 7.83 Hz', freq: [200, 207.83], color: 'bg-purple-100 text-purple-700' },
-            ];
-
+            // REFRESCAR ICONOS: Importante para CDN
             useEffect(() => {
-                const saved = localStorage.getItem('harmonic_protocols');
-                if (saved) {
-                    try { setSavedProtocols(JSON.parse(saved)); } catch (e) { console.error(e); }
+                if (window.lucide) {
+                    window.lucide.createIcons();
                 }
+            }, [isAuthenticated, isPlaying, audioState]);
+
+            // --- LÓGICA DE AUDIO CORE ---
+
+            // Inicializar o recuperar el contexto
+            const getAudioContext = useCallback(() => {
+                if (!audioContextRef.current) {
+                    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({
+                        latencyHint: 'balanced',
+                        sampleRate: 44100
+                    });
+                }
+                return audioContextRef.current;
             }, []);
 
-            // --- LÓGICA DE AUDIO ---
-            const drawVisualizations = () => {
-                if (!canvasRef.current || !analyserRef.current) return;
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                if (!ctx) return;
-                const bufferLength = analyserRef.current.frequencyBinCount;
-                const timeData = new Uint8Array(bufferLength);
-                analyserRef.current.getByteTimeDomainData(timeData);
-                ctx.fillStyle = 'rgb(10, 10, 10)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgb(99, 102, 241)';
-                ctx.beginPath();
-                const sliceWidth = canvas.width * 1.0 / bufferLength;
-                let x = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    const v = timeData[i] / 128.0;
-                    const y = v * canvas.height / 2;
-                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                    x += sliceWidth;
+            // Desbloquear audio (requerido por navegadores)
+            const unlockAudio = async () => {
+                const ctx = getAudioContext();
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
                 }
-                ctx.lineTo(canvas.width, canvas.height / 2);
-                ctx.stroke();
-                animationFrameRef.current = requestAnimationFrame(drawVisualizations);
-            };
-
-            const downloadBlob = (blob, name) => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = name;
-                a.click();
-                URL.revokeObjectURL(url);
-            };
-
-            const encodeWAV = (samples, sampleRate) => {
-                const buffer = new ArrayBuffer(44 + samples.length * 2);
-                const view = new DataView(buffer);
-                const writeString = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
-                writeString(0, 'RIFF');
-                view.setUint32(4, 32 + samples.length * 2, true);
-                writeString(8, 'WAVE');
-                writeString(12, 'fmt ');
-                view.setUint32(16, 16, true);
-                view.setUint16(20, 1, true);
-                view.setUint16(22, 1, true);
-                view.setUint32(24, sampleRate, true);
-                view.setUint32(28, sampleRate * 2, true);
-                view.setUint16(32, 2, true);
-                view.setUint16(34, 16, true);
-                writeString(36, 'data');
-                view.setUint32(40, samples.length * 2, true);
-                for (let i = 0; i < samples.length; i++) {
-                    const s = Math.max(-1, Math.min(1, samples[i]));
-                    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-                }
-                return new Blob([view], { type: 'audio/wav' });
-            };
-
-            const playAudio = async () => {
-                const ctx = audioContextRef.current || new (window.AudioContext || window.webkitAudioContext)();
-                audioContextRef.current = ctx;
-                if (ctx.state === 'suspended') await ctx.resume();
-                const freqs = frequenciesInput.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f) && f > 0);
-                if (freqs.length === 0) return alert("Ingresa frecuencias válidas");
-                stopAudio(true);
-                const startTime = ctx.currentTime + 0.05;
-                const masterGain = ctx.createGain();
-                masterGain.gain.value = volume;
-                masterGainRef.current = masterGain;
-                const compressor = ctx.createDynamicsCompressor();
-                const gainMain = ctx.createGain();
-                gainMain.gain.setValueAtTime(0, startTime);
-                gainMain.gain.linearRampToValueAtTime(1.0, startTime + 0.1);
-                gainNodeRef.current = gainMain;
-                const analyser = ctx.createAnalyser();
-                analyserRef.current = analyser;
-                const panner = ctx.createStereoPanner();
-                const indGain = 0.9 / Math.sqrt(freqs.length);
-                freqs.forEach((f, i) => {
-                    const osc = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    const p = ctx.createStereoPanner();
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(f, startTime);
-                    g.gain.setValueAtTime(0, startTime); g.gain.linearRampToValueAtTime(indGain, startTime + 0.1);
-                    if (freqs.length === 2) p.pan.setValueAtTime(i === 0 ? -binauralPan : binauralPan, startTime);
-                    else if (freqs.length > 2) p.pan.setValueAtTime(Math.sin(i * (Math.PI/freqs.length)*2)*binauralPan, startTime);
-                    osc.connect(g); g.connect(p); p.connect(gainMain);
-                    oscillatorsRef.current.push(osc); osc.start(startTime);
-                });
-                gainMain.connect(analyser); analyser.connect(masterGain); masterGain.connect(panner);
-                panner.connect(compressor); compressor.connect(ctx.destination);
-                setIsPlaying(true); drawVisualizations();
-                if (duration > 0) {
-                    const total = duration * 60;
-                    gainMain.gain.setValueAtTime(1.0, startTime + total - 0.1);
-                    gainMain.gain.linearRampToValueAtTime(0, startTime + total);
-                    timerRef.current = setTimeout(stopAudio, (total + 0.2) * 1000);
-                }
+                setAudioState(ctx.state);
+                // Play silent buffer for iOS
+                const buffer = ctx.createBuffer(1, 1, 22050);
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(ctx.destination);
+                source.start(0);
             };
 
             const stopAudio = (reset = false) => {
-                const ctx = audioContextRef.current;
-                const gn = gainNodeRef.current;
                 if (!reset) setIsPlaying(false);
+                
+                const ctx = audioContextRef.current;
+                const gn = masterGainRef.current;
+                
                 if (ctx && gn) {
-                    const time = ctx.currentTime + 0.15;
-                    gn.gain.linearRampToValueAtTime(0, time);
-                    oscillatorsRef.current.forEach(o => { try{o.stop(time);}catch(e){} });
+                    const stopTime = ctx.currentTime + 0.15;
+                    gn.gain.linearRampToValueAtTime(0, stopTime);
+                    oscillatorsRef.current.forEach(osc => {
+                        try { osc.stop(stopTime); } catch(e) {}
+                    });
                 }
+                
                 oscillatorsRef.current = [];
                 if (timerRef.current) clearTimeout(timerRef.current);
                 if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
             };
 
-            const handlePinSubmit = (e) => {
-                e.preventDefault();
-                if (pinEntry.trim().toUpperCase() === 'AGUSTIN') setIsAuthenticated(true);
-                else { setError('Contraseña incorrecta'); setPinEntry(''); }
+            const playAudio = async () => {
+                const ctx = getAudioContext();
+                
+                // Intento de desbloqueo agresivo
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
+                }
+                setAudioState(ctx.state);
+
+                if (ctx.state !== 'running') {
+                    // Si sigue suspendido, el botón flotante aparecerá
+                    return; 
+                }
+
+                const freqs = frequenciesInput.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f) && f > 0);
+                if (freqs.length === 0) return alert("Frecuencias no válidas.");
+
+                stopAudio(true);
+                const now = ctx.currentTime;
+                const startAt = now + 0.05;
+
+                // NODO MAESTRO
+                const masterGain = ctx.createGain();
+                masterGain.gain.setValueAtTime(0, startAt);
+                masterGain.gain.linearRampToValueAtTime(volume, startAt + 0.1);
+                masterGainRef.current = masterGain;
+
+                // ANALIZADOR
+                const analyser = ctx.createAnalyser();
+                analyser.fftSize = 1024;
+                visualiserAnalyserRef.current = analyser;
+
+                const indGainValue = 0.8 / Math.sqrt(freqs.length);
+
+                freqs.forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const p = ctx.createStereoPanner ? ctx.createStereoPanner() : null; // Fallback legacy
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, startAt);
+                    
+                    g.gain.setValueAtTime(0, startAt);
+                    g.gain.linearRampToValueAtTime(indGainValue, startAt + 0.1);
+
+                    osc.connect(g);
+                    if (p) {
+                        // Paneo binaural
+                        if (freqs.length === 2) p.pan.setValueAtTime(i === 0 ? -binauralPan : binauralPan, startAt);
+                        else if (freqs.length > 2) p.pan.setValueAtTime(Math.sin(i * (Math.PI / freqs.length) * 2) * binauralPan, startAt);
+                        g.connect(p);
+                        p.connect(masterGain);
+                    } else {
+                        g.connect(masterGain);
+                    }
+                    
+                    oscillatorsRef.current.push(osc);
+                    osc.start(startAt);
+                });
+
+                masterGain.connect(analyser);
+                analyser.connect(ctx.destination);
+
+                setIsPlaying(true);
+                drawVisual();
+
+                if (duration > 0) {
+                    const totalSec = duration * 60;
+                    masterGain.gain.setValueAtTime(volume, startAt + totalSec - 0.2);
+                    masterGain.gain.linearRampToValueAtTime(0, startAt + totalSec);
+                    timerRef.current = setTimeout(stopAudio, (totalSec + 0.5) * 1000);
+                }
             };
 
-            // --- RENDER ---
-            if (!isAuthenticated) {
-                return (
-                    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-                        <div className="bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-800 w-full max-w-md animate-in zoom-in">
-                            <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Icon name="play" size={32} className="text-white fill-current" />
-                                </div>
-                                <h1 className="text-2xl font-bold text-white mb-2">Farmacia Vibracional</h1>
-                                <p className="text-zinc-400 text-sm">Ingrese su clave para continuar</p>
-                            </div>
-                            <form onSubmit={handlePinSubmit} className="space-y-4">
-                                <input type="password" value={pinEntry} onChange={e=>setPinEntry(e.target.value)} placeholder="Contraseña"
-                                    className="w-full bg-zinc-800 border border-zinc-700 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-center font-mono" />
-                                {error && <p className="text-red-500 text-xs text-center">{error}</p>}
-                                <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Acceder</button>
-                            </form>
-                            <p className="text-center text-zinc-600 text-[10px] mt-8 uppercase tracking-[0.2em] font-bold">Protocolo de Acceso Seguro v2.0</p>
+            const drawVisual = () => {
+                if (!canvasRef.current || !visualiserAnalyserRef.current) return;
+                const canvas = canvasRef.current;
+                const ctx2d = canvas.getContext('2d');
+                const analyser = visualiserAnalyserRef.current;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                const render = () => {
+                    analyser.getByteTimeDomainData(dataArray);
+                    ctx2d.fillStyle = '#09090b';
+                    ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx2d.lineWidth = 2;
+                    ctx2d.strokeStyle = '#6366f1';
+                    ctx2d.beginPath();
+                    const sliceW = canvas.width / bufferLength;
+                    let x = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        const v = dataArray[i] / 128.0;
+                        const y = v * canvas.height / 2;
+                        if (i === 0) ctx2d.moveTo(x, y); else ctx2d.lineTo(x, y);
+                        x += sliceW;
+                    }
+                    ctx2d.lineTo(canvas.width, canvas.height / 2);
+                    ctx2d.stroke();
+                    animationFrameRef.current = requestAnimationFrame(render);
+                };
+                render();
+            };
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (pinEntry.toUpperCase() === 'AGUSTIN') {
+                    setIsAuthenticated(true);
+                    unlockAudio(); // Intento unlock al entrar
+                } else {
+                    setError('PIN incorrecto');
+                    setPinEntry('');
+                }
+            };
+
+            const presets = [
+                { n: '396 Hz (UT)', f: '396' },
+                { n: '417 Hz (RE)', f: '417' },
+                { n: '528 Hz (MI)', f: '528' },
+                { n: '639 Hz (FA)', f: '639' },
+                { n: '852 Hz (LA)', f: '852' },
+                { n: 'Alpha 10Hz', f: '200, 210' },
+                { n: 'Theta 4Hz', f: '100, 104' }
+            ];
+
+            // --- VISTAS ---
+
+            if (!isAuthenticated) return (
+                <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 animate-in">
+                    <div className="w-full max-w-sm bg-zinc-900 p-8 rounded-3xl border border-zinc-800 shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-indigo-500/20 shadow-xl">
+                            <Icon name="lock" size={32} className="text-white" />
                         </div>
+                        <h1 className="text-2xl font-bold text-white mb-2">Acceso Farmacia</h1>
+                        <p className="text-zinc-500 text-sm mb-8">Introduzca el código autorizado</p>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <input 
+                                type="password" 
+                                value={pinEntry} 
+                                onChange={e => setPinEntry(e.target.value)} 
+                                placeholder="CÓDIGO PIN"
+                                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl py-3 px-4 text-center font-mono tracking-widest outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            {error && <p className="text-red-500 text-xs font-bold">{error}</p>}
+                            <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 active:scale-95 transition shadow-lg shadow-indigo-500/20">Entrar</button>
+                        </form>
                     </div>
-                );
-            }
+                </div>
+            );
 
             return (
-                <div className="min-h-screen bg-zinc-50 p-6 md:p-12 font-sans animate-in fade-in">
-                    <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-zinc-100">
-                        <div className="flex items-center justify-between mb-2">
-                            <h1 className="text-3xl font-bold text-zinc-900">Farmacia Vibracional</h1>
-                            <button onClick={()=>setIsAuthenticated(false)} className="text-[10px] text-zinc-400 uppercase font-bold hover:text-indigo-600 transition">Cerrar Sesión</button>
-                        </div>
-                        <p className="text-zinc-500 mb-8">Generador de frecuencias para terapia sonora y bienestar.</p>
-                        <div className="space-y-6">
-                            <div className="bg-zinc-900 rounded-2xl p-1 overflow-hidden border border-zinc-800 shadow-inner">
-                                <canvas ref={canvasRef} width="600" height="200" className="w-full h-40 opacity-90" />
+                <div className="min-h-screen bg-zinc-50 p-6 md:p-12 animate-in pb-32">
+                    <div className="max-w-xl mx-auto bg-white p-8 rounded-[32px] shadow-sm border border-zinc-100">
+                        <header className="flex justify-between items-center mb-6">
+                            <div>
+                                <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+                                    <Icon name="activity" size={24} className="text-indigo-600" />
+                                    Farmacia Vibracional
+                                </h1>
                             </div>
+                            <button onClick={()=>setIsAuthenticated(false)} className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hover:text-red-500 transition">Salir</button>
+                        </header>
+
+                        <div className="space-y-6">
+                            <canvas ref={canvasRef} width="600" height="150" className="w-full h-32 bg-zinc-950 rounded-2xl shadow-inner border border-zinc-800" />
+
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {presets.map(p => (
-                                    <button key={p.name} onClick={() => setFrequenciesInput(p.freq.join(','))}
-                                        className={`text-[9px] uppercase tracking-wider font-bold py-2 px-3 rounded-lg transition ${p.color} hover:opacity-80`}>{p.name}</button>
+                                    <button 
+                                        key={p.n} 
+                                        onClick={() => setFrequenciesInput(p.f)}
+                                        className="text-[9px] uppercase font-bold py-2 px-2 bg-zinc-100 text-zinc-600 rounded-lg hover:bg-indigo-100 hover:text-indigo-700 transition"
+                                    >
+                                        {p.n}
+                                    </button>
                                 ))}
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-zinc-700 mb-2">Frecuencias (Hz, separadas por coma)</label>
-                                <input type="text" value={frequenciesInput} onChange={e=>setFrequenciesInput(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-indigo-500 outline-none font-mono" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-zinc-700 mb-2 flex items-center gap-2"><Icon name="clock" size={16} /> Duración ({duration}m)</label>
-                                    <input type="range" min="0" max="60" value={duration} onChange={e=>setDuration(parseInt(e.target.value))} className="w-full" />
+                                    <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-2 ml-1">Frecuencias (Hz)</label>
+                                    <input 
+                                        value={frequenciesInput} 
+                                        onChange={e=>setFrequenciesInput(e.target.value)}
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 px-4 font-mono text-indigo-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-zinc-700 mb-2 flex items-center gap-2"><Icon name="volume-2" size={16} /> Volumen ({Math.round(volume*100)}%)</label>
-                                    <input type="range" min="0" max="1" step="0.01" value={volume} onChange={e=>setVolume(parseFloat(e.target.value))} className="w-full" />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-2 ml-1 flex items-center gap-1">
+                                            <Icon name="clock" size={12} /> {duration} min
+                                        </label>
+                                        <input type="range" min="0" max="60" value={duration} onChange={e=>setDuration(parseInt(e.target.value))} className="w-full h-1.5" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-2 ml-1 flex items-center gap-1">
+                                            <Icon name="volume-2" size={12} /> {Math.round(volume*100)}%
+                                        </label>
+                                        <input type="range" min="0" max="1" step="0.01" value={volume} onChange={e=>setVolume(parseFloat(e.target.value))} className="w-full h-1.5" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                                    <label className="block text-[10px] font-bold text-indigo-900 uppercase mb-2 flex items-center gap-1">Separación Binaural</label>
+                                    <input type="range" min="0" max="1" step="0.01" value={binauralPan} onChange={e=>setBinauralPan(parseFloat(e.target.value))} className="w-full h-2 accent-indigo-600" />
                                 </div>
                             </div>
-                            <button onClick={isPlaying ? stopAudio : playAudio} className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-lg transition shadow-lg ${isPlaying ? 'bg-zinc-800 text-white' : 'bg-indigo-600 text-white shadow-indigo-200'}`}>
-                                <Icon name={isPlaying ? "square" : "play"} size={20} className="fill-current" />
+
+                            <button 
+                                onClick={isPlaying ? stopAudio : playAudio}
+                                className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition shadow-xl active:scale-95 ${
+                                    isPlaying ? 'bg-zinc-800 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/20'
+                                }`}
+                            >
+                                <Icon name={isPlaying ? "square" : "play"} size={22} className="fill-current" />
                                 {isPlaying ? 'Detener Terapia' : 'Iniciar Terapia'}
                             </button>
                         </div>
                     </div>
+
+                    {/* BOTÓN FLOTANTE DE DESBLOQUEO (Aparece si el navegador bloquea audio) */}
+                    {audioState === 'suspended' && (
+                        <div className="fixed bottom-6 right-6 left-6 md:left-auto md:w-80 slide-up z-50">
+                            <button 
+                                onClick={unlockAudio}
+                                className="w-full bg-orange-500 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between font-bold border-2 border-white"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Icon name="volume-x" size={24} />
+                                    <span>Audio Bloqueado</span>
+                                </div>
+                                <span className="bg-white/20 px-3 py-1 rounded-lg text-xs uppercase">Activar Sonido</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             );
         }

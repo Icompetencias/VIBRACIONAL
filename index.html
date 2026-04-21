@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonancia Armónica Ultra Pro</title>
+    <title>Resonancia Armónica Pro V3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         input[type=range] { accent-color: #6366f1; cursor: pointer; }
-        .session-card { border-left: 5px solid #6366f1; transition: all 0.2s; }
-        .freq-btn { transition: all 0.2s; font-size: 10px; font-weight: bold; height: 44px; display: flex; align-items: center; justify-content: center; }
-        .freq-btn:active { transform: scale(0.9); }
+        .session-card { border-left: 5px solid #6366f1; transition: all 0.2s; cursor: pointer; }
+        .session-card:active { transform: scale(0.98); }
+        .freq-btn { transition: all 0.2s; font-size: 10px; font-weight: bold; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; }
+        .freq-btn:active { transform: scale(0.9); background-color: #f8fafc; }
+        body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-slate-950 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
@@ -23,46 +25,46 @@
     <div id="main-app" class="hidden w-full max-w-md bg-slate-50 rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white/10">
         <div class="bg-indigo-600 p-6 text-white text-center">
             <h1 class="text-2xl font-black italic uppercase leading-none">Resonancia Armónica</h1>
-            <p class="text-[9px] tracking-[0.3em] opacity-80 font-bold mt-2">SISTEMA POLIFÓNICO PROFESIONAL</p>
+            <p class="text-[9px] tracking-[0.3em] opacity-80 font-bold mt-2 text-indigo-100">BIO-FRECUENCIA PROFESIONAL</p>
         </div>
 
         <div class="p-5 space-y-4">
             <div class="grid grid-cols-3 gap-2">
-                <button onclick="addFreq(396)" class="freq-btn bg-white border border-slate-200 rounded-xl text-red-600 shadow-sm">UT 396Hz</button>
-                <button onclick="addFreq(417)" class="freq-btn bg-white border border-slate-200 rounded-xl text-orange-600 shadow-sm">RE 417Hz</button>
-                <button onclick="addFreq(528)" class="freq-btn bg-white border border-slate-200 rounded-xl text-emerald-600 shadow-sm">MI 528Hz</button>
-                <button onclick="addFreq(639)" class="freq-btn bg-white border border-slate-200 rounded-xl text-blue-600 shadow-sm">FA 639Hz</button>
-                <button onclick="addFreq(741)" class="freq-btn bg-white border border-slate-200 rounded-xl text-indigo-600 shadow-sm">SOL 741Hz</button>
-                <button onclick="addFreq(852)" class="freq-btn bg-white border border-slate-200 rounded-xl text-purple-600 shadow-sm">LA 852Hz</button>
-                <button onclick="setSchumann()" class="freq-btn bg-indigo-600 text-white rounded-xl col-span-3 shadow-md">🌍 SCHUMANN (200Hz + 207.83Hz)</button>
+                <button onclick="addFreq(396)" class="freq-btn bg-white rounded-xl text-red-600 shadow-sm">UT 396Hz</button>
+                <button onclick="addFreq(417)" class="freq-btn bg-white rounded-xl text-orange-600 shadow-sm">RE 417Hz</button>
+                <button onclick="addFreq(528)" class="freq-btn bg-white rounded-xl text-emerald-600 shadow-sm">MI 528Hz</button>
+                <button onclick="addFreq(639)" class="freq-btn bg-white rounded-xl text-blue-600 shadow-sm">FA 639Hz</button>
+                <button onclick="addFreq(741)" class="freq-btn bg-white rounded-xl text-indigo-600 shadow-sm">SOL 741Hz</button>
+                <button onclick="addFreq(852)" class="freq-btn bg-white rounded-xl text-purple-600 shadow-sm">LA 852Hz</button>
+                <button onclick="setSchumann()" class="freq-btn bg-indigo-600 text-white rounded-xl col-span-3 shadow-md border-none uppercase tracking-widest">🌍 SCHUMANN (200Hz + 207.83Hz)</button>
             </div>
 
-            <div class="bg-slate-900 rounded-3xl p-5 shadow-inner">
-                <label class="text-[9px] font-bold text-indigo-400 uppercase block text-center mb-1">Frecuencias en uso</label>
+            <div class="bg-slate-900 rounded-[2rem] p-5 shadow-inner">
+                <label class="text-[9px] font-bold text-indigo-400 uppercase block text-center mb-1 tracking-widest">Frecuencias activas</label>
                 <input type="text" id="freq-input" value="528" 
-                       class="bg-transparent w-full text-2xl font-mono text-indigo-400 outline-none text-center border-b border-indigo-900/50 pb-2">
-                <button onclick="clearFreqs()" class="text-[9px] text-slate-500 w-full mt-2 uppercase font-bold hover:text-white italic">Limpiar Laboratorio</button>
+                       class="bg-transparent w-full text-2xl font-mono text-indigo-300 outline-none text-center border-b border-indigo-900/50 pb-2">
+                <button onclick="clearFreqs()" class="text-[8px] text-slate-500 w-full mt-2 uppercase font-bold hover:text-slate-300 italic">Limpiar Laboratorio</button>
             </div>
 
             <div class="space-y-4 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Volumen</span> <span id="vol-txt">50%</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Volumen</span> <span id="vol-txt" class="text-indigo-600">50%</span></div>
                     <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateUI()" class="w-full">
                 </div>
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Binaural (Desfase)</span> <span id="bin-txt">0%</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Binaural (Desfase)</span> <span id="bin-txt" class="text-indigo-600">0%</span></div>
                     <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateUI()" class="w-full">
                 </div>
             </div>
 
-            <button id="play-btn" onclick="toggleTerapia()" class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-xl active:scale-95 transition-all uppercase">Iniciar Terapia</button>
+            <button id="play-btn" onclick="toggleTerapia()" class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-tight">Iniciar Terapia</button>
 
             <div class="pt-4 border-t border-slate-200">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase">📂 Mis Protocolos</h2>
-                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[9px] font-bold shadow-md">GUARDAR</button>
+                    <h2 class="text-[10px] font-black text-slate-400 uppercase flex items-center gap-1">📂 Mi Botiquín Personal</h2>
+                    <button onclick="saveSession()" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-bold">GUARDAR ACTUAL</button>
                 </div>
-                <input type="text" id="session-name" placeholder="Nombre del protocolo..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm mb-3 outline-none focus:ring-2 ring-indigo-500">
+                <input type="text" id="session-name" placeholder="Nombre (ej: Protocolo Respiratorio)" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm mb-3 outline-none focus:ring-2 ring-indigo-500">
                 <div id="sessions-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
             </div>
         </div>
@@ -79,10 +81,10 @@
             }
         }
 
-        // Función específica para Schumann 200, 207.83
+        // Función Schumann Original (200Hz + 207.83Hz)
         function setSchumann() {
             document.getElementById('freq-input').value = "200, 207.83";
-            document.getElementById('bin-input').value = "0"; // Ya está integrada en la combinación
+            document.getElementById('bin-input').value = "0";
             updateUI();
             if(isRunning) restartAudio();
         }
@@ -159,15 +161,15 @@
             const name = document.getElementById('session-name').value || "Protocolo Nuevo";
             const freqs = document.getElementById('freq-input').value;
             const bin = document.getElementById('bin-input').value;
-            let sessions = JSON.parse(localStorage.getItem('resonancia_pro_v3') || '[]');
+            let sessions = JSON.parse(localStorage.getItem('resonancia_final_v3') || '[]');
             sessions.unshift({ name, freqs, bin });
-            localStorage.setItem('resonancia_pro_v3', JSON.stringify(sessions));
+            localStorage.setItem('resonancia_final_v3', JSON.stringify(sessions));
             document.getElementById('session-name').value = "";
             renderSessions();
         }
 
         function renderSessions() {
-            const sessions = JSON.parse(localStorage.getItem('resonancia_pro_v3') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('resonancia_final_v3') || '[]');
             document.getElementById('sessions-list').innerHTML = sessions.map((s, i) => `
                 <div class="session-card bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100" onclick="loadSession(${i})">
                     <div class="flex-1">
@@ -180,16 +182,16 @@
         }
 
         function loadSession(i) {
-            const sessions = JSON.parse(localStorage.getItem('resonancia_pro_v3') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('resonancia_final_v3') || '[]');
             document.getElementById('freq-input').value = sessions[i].freqs;
             document.getElementById('bin-input').value = sessions[i].bin;
             updateUI();
         }
 
         function deleteSession(i) {
-            let sessions = JSON.parse(localStorage.getItem('resonancia_pro_v3') || '[]');
+            let sessions = JSON.parse(localStorage.getItem('resonancia_final_v3') || '[]');
             sessions.splice(i, 1);
-            localStorage.setItem('resonancia_pro_v3', JSON.stringify(sessions));
+            localStorage.setItem('resonancia_final_v3', JSON.stringify(sessions));
             renderSessions();
         }
         renderSessions();

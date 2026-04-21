@@ -1,157 +1,33 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farmacia Vibracional ULTRA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        input[type=range] { accent-color: #6366f1; }
-        .glass-card { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); }
-        .session-card { border-left: 5px solid #6366f1; transition: all 0.2s; cursor: pointer; }
-        .session-card:hover { background: #f8fafc; }
-    </style>
-</head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
+// Reemplaza tu lógica de inicio de audio con algo similar a esto:
+function playAudio() {
+    const freqInput = document.getElementById('freq-input').value;
+    const frequencies = freqInput.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
+    const binauralGap = parseFloat(document.getElementById('bin-input').value) || 0;
 
-    <div id="pin-screen" class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center glass-card">
-        <h1 class="text-2xl font-black mb-6 italic">ACCESO PRIVADO</h1>
-        <input type="password" id="pin-input" placeholder="PIN" class="w-full text-center text-4xl p-4 border-2 rounded-2xl mb-6 outline-none focus:border-indigo-500 font-mono">
-        <button onclick="checkPin()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl">ENTRAR</button>
-    </div>
+    // Detener audio previo si existe
+    stopAudio();
 
-    <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden">
-        <div class="bg-indigo-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-black italic uppercase">Farmacia Vibracional Ultra</h1>
-            <p class="text-[10px] tracking-widest opacity-70">SISTEMA MULTI-FRECUENCIA</p>
-        </div>
+    frequencies.forEach(freq => {
+        // Crear oscilador para el oído izquierdo (Frecuencia base)
+        const oscL = audioCtx.createOscillator();
+        const panL = audioCtx.createStereoPanner();
+        panL.pan.value = -1;
+        oscL.frequency.value = freq;
+        
+        // Crear oscilador para el oído derecho (Frecuencia + Separación Binaural)
+        const oscR = audioCtx.createOscillator();
+        const panR = audioCtx.createStereoPanner();
+        panR.pan.value = 1;
+        oscR.frequency.value = freq + binauralGap;
 
-        <div class="p-6 space-y-5">
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="addFreq(396)" class="p-2 bg-slate-50 border rounded-xl text-[10px] font-bold">UT 396</button>
-                <button onclick="addFreq(528)" class="p-2 bg-indigo-50 border rounded-xl text-[10px] font-bold">MI 528</button>
-                <button onclick="addFreq(852)" class="p-2 bg-slate-50 border rounded-xl text-[10px] font-bold">LA 852</button>
-                <button onclick="setFreq('7.83')" class="p-2 bg-emerald-50 border border-emerald-200 rounded-xl text-[10px] font-bold col-span-3 text-emerald-700">🌍 FRECUENCIA SCHUMANN (7.83Hz)</button>
-            </div>
-
-            <div class="bg-slate-900 rounded-[2rem] p-5">
-                <label class="text-[9px] font-bold text-indigo-400 uppercase block text-center mb-2">Frecuencias activas (sep. por comas)</label>
-                <input type="text" id="freq-input" value="528" 
-                       class="bg-transparent w-full text-3xl font-mono text-indigo-400 outline-none text-center">
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Volumen</span> <span id="vol-txt">50%</span></div>
-                    <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateParams()" class="w-full">
-                </div>
-                <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Binaural (Desfase)</span> <span id="bin-txt">0%</span></div>
-                    <input type="range" id="bin-input" min="0" max="10" step="0.1" value="0" oninput="updateParams()" class="w-full">
-                </div>
-            </div>
-
-            <button id="play-btn" onclick="toggleTerapia()" class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-2xl transition-all">INICIAR TERAPIA</button>
-
-            <div class="pt-4 border-t">
-                <label class="text-[10px] font-bold text-slate-400 uppercase block mb-2">Guardar Combinación en Botiquín</label>
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="session-name" placeholder="Nombre (ej: Relax)" class="flex-1 bg-slate-100 border rounded-xl px-4 py-2 text-sm">
-                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-5 rounded-xl font-bold">+</button>
-                </div>
-                <div id="sessions-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const PIN = "AGUSTIN";
-        let audioCtx = null, oscillators = [], gainNodes = [], isRunning = false;
-
-        function checkPin() {
-            if(document.getElementById('pin-input').value.toUpperCase() === PIN) {
-                document.getElementById('pin-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-            }
-        }
-
-        function setFreq(val) { document.getElementById('freq-input').value = val; updateParams(); }
-        function addFreq(val) { 
-            let current = document.getElementById('freq-input').value;
-            document.getElementById('freq-input').value = current ? current + ", " + val : val;
-            updateParams();
-        }
-
-        function updateParams() {
-            document.getElementById('vol-txt').innerText = Math.round(document.getElementById('vol-input').value * 100) + "%";
-            document.getElementById('bin-txt').innerText = Math.round(document.getElementById('bin-input').value * 10) + "%";
-            if (isRunning) { stopAll(); playAll(); }
-        }
-
-        function stopAll() {
-            oscillators.forEach(o => { try { o.stop(); } catch(e) {} });
-            oscillators = []; gainNodes = [];
-        }
-
-        function playAll() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const freqs = document.getElementById('freq-input').value.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
-            const vol = parseFloat(document.getElementById('vol-input').value) / (freqs.length || 1);
-            const bin = parseFloat(document.getElementById('bin-input').value);
-
-            freqs.forEach(f => {
-                let osc = audioCtx.createOscillator();
-                let g = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(f + bin, audioCtx.currentTime);
-                g.gain.setValueAtTime(vol, audioCtx.currentTime);
-                osc.connect(g);
-                g.connect(audioCtx.destination);
-                osc.start();
-                oscillators.push(osc);
-                gainNodes.push(g);
-            });
-        }
-
-        function toggleTerapia() {
-            const btn = document.getElementById('play-btn');
-            if (!isRunning) {
-                isRunning = true; playAll();
-                btn.innerText = "DETENER TERAPIA"; btn.classList.replace('bg-slate-900', 'bg-red-600');
-            } else {
-                isRunning = false; stopAll();
-                btn.innerText = "INICIAR TERAPIA"; btn.classList.replace('bg-red-600', 'bg-slate-900');
-            }
-        }
-
-        function saveSession() {
-            const name = document.getElementById('session-name').value || "Sesión";
-            const session = { name, freqs: document.getElementById('freq-input').value };
-            let saved = JSON.parse(localStorage.getItem('farmacia_ultra') || '[]');
-            saved.push(session);
-            localStorage.setItem('farmacia_ultra', JSON.stringify(saved));
-            renderSessions();
-        }
-
-        function renderSessions() {
-            const saved = JSON.parse(localStorage.getItem('farmacia_ultra') || '[]');
-            document.getElementById('sessions-list').innerHTML = saved.map((s, i) => `
-                <div class="session-card bg-slate-50 p-3 rounded-xl flex justify-between items-center" onclick="setFreq('${s.freqs}')">
-                    <div class="text-left"><p class="font-bold text-xs uppercase">${s.name}</p><p class="text-[9px] text-indigo-600 font-mono">${s.freqs} Hz</p></div>
-                    <button onclick="event.stopPropagation(); deleteSession(${i})" class="text-slate-300">✕</button>
-                </div>
-            `).join('');
-        }
-
-        function deleteSession(i) {
-            let saved = JSON.parse(localStorage.getItem('farmacia_ultra') || '[]');
-            saved.splice(i, 1);
-            localStorage.setItem('farmacia_ultra', JSON.stringify(saved));
-            renderSessions();
-        }
-        renderSessions();
-    </script>
-</body>
-</html>
+        // Conectar al volumen master y reproducir
+        oscL.connect(panL).connect(masterGain);
+        oscR.connect(panR).connect(masterGain);
+        
+        oscL.start();
+        oscR.start();
+        
+        // Guardar referencias para poder detenerlas luego
+        activeOscillators.push(oscL, oscR);
+    });
+}

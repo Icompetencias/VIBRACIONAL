@@ -7,9 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         input[type=range] { accent-color: #4f46e5; cursor: pointer; }
-        .session-card { transition: all 0.2s; }
+        .session-card { transition: all 0.2s; border-left: 4px solid #4f46e5; }
         .session-card:active { transform: scale(0.98); }
-    </script>
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
 </head>
 <body class="bg-slate-50 min-h-screen p-4 font-sans">
 
@@ -22,24 +23,25 @@
 
         <div class="p-6 space-y-6">
             <div class="text-center">
-                <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Frecuencia Actual (Hz)</label>
-                <input type="number" id="freq-input" value="528" step="0.01" oninput="updateFrequency()" 
-                       class="w-full text-5xl font-mono text-center outline-none py-2 text-slate-800">
+                <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Frecuencia Principal (Hz)</label>
+                <input type="number" id="freq-input" value="528" step="0.01" oninput="updateParams()" 
+                       class="w-full text-5xl font-mono text-center outline-none py-2 text-slate-800 bg-transparent">
             </div>
 
-            <div class="space-y-4 bg-slate-50 p-4 rounded-2xl">
+            <div class="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div>
                     <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                        <span>Volumen Máster</span> <span id="vol-txt">60%</span>
+                        <span>Volumen</span> <span id="vol-txt">60%</span>
                     </div>
                     <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.6" oninput="updateParams()" class="w-full">
                 </div>
 
                 <div>
                     <div class="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                        <span>Separación Binaural</span> <span id="bin-txt">0%</span>
+                        <span>Separación Binaural (Diferencia)</span> <span id="bin-txt">0%</span>
                     </div>
-                    <input type="range" id="bin-input" min="0" max="10" step="0.1" value="0" oninput="updateParams()" class="w-full">
+                    <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateParams()" class="w-full">
+                    <p class="text-[9px] text-slate-400 mt-1">Suma hasta +20Hz a la frecuencia base</p>
                 </div>
             </div>
 
@@ -51,9 +53,9 @@
             <div class="pt-4 border-t border-slate-100">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guardar en Mi Botiquín</label>
                 <div class="flex gap-2 mt-2">
-                    <input type="text" id="session-name" placeholder="Ej: Rinitis, Sueño..." 
+                    <input type="text" id="session-name" placeholder="Nombre (ej: Rinitis)" 
                            class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-indigo-200">
-                    <button onclick="saveSession()" class="bg-indigo-100 text-indigo-600 px-6 rounded-xl font-bold hover:bg-indigo-200">+</button>
+                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-6 rounded-xl font-bold hover:bg-indigo-700 shadow-md">+</button>
                 </div>
                 
                 <div id="sessions-list" class="mt-4 grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -68,6 +70,7 @@
         let mainGain = null;
         let isRunning = false;
 
+        // Inicia el audio una sola vez para evitar bloqueos
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -75,7 +78,7 @@
                 mainGain = audioCtx.createGain();
                 
                 mainOsc.type = 'sine';
-                mainGain.gain.setValueAtTime(0, audioCtx.currentTime); // Inicia en silencio
+                mainGain.gain.setValueAtTime(0, audioCtx.currentTime); // Inicia en silencio absoluto
                 
                 mainOsc.connect(mainGain);
                 mainGain.connect(audioCtx.destination);
@@ -83,29 +86,29 @@
             }
         }
 
+        // Actualiza los valores de la pantalla y el sonido en tiempo real
         function updateParams() {
             const vol = document.getElementById('vol-input').value;
             const bin = document.getElementById('bin-input').value;
+            const freq = parseFloat(document.getElementById('freq-input').value) || 0;
             
+            // Actualizar textos de porcentaje
             document.getElementById('vol-txt').innerText = Math.round(vol * 100) + "%";
-            document.getElementById('bin-txt').innerText = Math.round((bin / 10) * 100) + "%";
+            document.getElementById('bin-txt').innerText = Math.round((bin / 20) * 100) + "%";
             
-            if (isRunning && mainGain) {
-                mainGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.05);
-            }
-            updateFrequency();
-        }
-
-        function updateFrequency() {
-            if (mainOsc) {
-                const baseFreq = parseFloat(document.getElementById('freq-input').value) || 0;
-                const binOffset = parseFloat(document.getElementById('bin-input').value) || 0;
-                mainOsc.frequency.setTargetAtTime(baseFreq + binOffset, audioCtx.currentTime, 0.05);
+            if (mainOsc && mainGain) {
+                // Cambiar frecuencia suavemente para que no haga "clics"
+                mainOsc.frequency.setTargetAtTime(freq + parseFloat(bin), audioCtx.currentTime, 0.05);
+                
+                // Si está encendido, aplicar el volumen actual
+                if (isRunning) {
+                    mainGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.05);
+                }
             }
         }
 
         function toggleTerapia() {
-            initAudio();
+            initAudio(); // Asegura que el motor esté listo
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             const btn = document.getElementById('play-btn');
@@ -113,64 +116,80 @@
 
             if (!isRunning) {
                 isRunning = true;
-                mainGain.gain.setTargetAtTime(document.getElementById('vol-input').value, audioCtx.currentTime, 0.1);
+                const currentVol = document.getElementById('vol-input').value;
+                mainGain.gain.setTargetAtTime(currentVol, audioCtx.currentTime, 0.1);
+                
                 btn.innerText = "DETENER TERAPIA";
-                btn.className = "w-full py-6 bg-red-600 text-white rounded-2xl text-xl font-black shadow-xl transition-all";
-                light.className = "inline-block w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse";
+                btn.classList.replace('bg-slate-900', 'bg-red-600');
+                light.classList.replace('bg-red-400', 'bg-green-400');
+                light.classList.add('animate-pulse');
             } else {
                 isRunning = false;
                 mainGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                
                 btn.innerText = "INICIAR TERAPIA";
-                btn.className = "w-full py-6 bg-slate-900 text-white rounded-2xl text-xl font-black shadow-xl transition-all";
-                light.className = "inline-block w-2 h-2 rounded-full bg-red-400 mr-2";
+                btn.classList.replace('bg-red-600', 'bg-slate-900');
+                light.classList.replace('bg-green-400', 'bg-red-400');
+                light.classList.remove('animate-pulse');
             }
         }
 
-        // GESTIÓN DE SESIONES
+        // --- SISTEMA DE BOTIQUÍN (GUARDAR SESIONES) ---
         function saveSession() {
-            const name = document.getElementById('session-name').value || "Frecuencia " + document.getElementById('freq-input').value;
+            const nameInput = document.getElementById('session-name');
+            if (!nameInput.value) return;
+
             const session = {
-                name: name,
+                name: nameInput.value,
                 freq: document.getElementById('freq-input').value,
                 bin: document.getElementById('bin-input').value
             };
-            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional') || '[]');
+
+            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
             sessions.push(session);
-            localStorage.setItem('farmacia_vibracional', JSON.stringify(sessions));
-            document.getElementById('session-name').value = "";
+            localStorage.setItem('farmacia_vibracional_v3', JSON.stringify(sessions));
+            
+            nameInput.value = "";
             renderSessions();
         }
 
         function renderSessions() {
             const list = document.getElementById('sessions-list');
-            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
+            
+            if (sessions.length === 0) {
+                list.innerHTML = '<p class="text-[10px] text-slate-300 text-center py-4 italic">Tu botiquín está vacío</p>';
+                return;
+            }
+
             list.innerHTML = sessions.map((s, index) => `
-                <div class="session-card flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div class="session-card flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-slate-100">
                     <div class="cursor-pointer flex-1" onclick="loadSession(${index})">
-                        <p class="font-bold text-sm text-slate-700">${s.name}</p>
-                        <p class="text-[10px] text-indigo-500 font-mono">${s.freq} Hz + ${s.bin} Hz</p>
+                        <p class="font-bold text-sm text-slate-700 uppercase tracking-tight">${s.name}</p>
+                        <p class="text-[10px] text-indigo-500 font-mono">${s.freq} Hz + ${s.bin} Hz de diferencia</p>
                     </div>
-                    <button onclick="deleteSession(${index})" class="text-slate-300 hover:text-red-400 text-xs px-2">✕</button>
+                    <button onclick="deleteSession(${index})" class="text-slate-300 hover:text-red-500 text-lg font-bold px-2">×</button>
                 </div>
             `).join('');
         }
 
         function loadSession(index) {
-            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
             const s = sessions[index];
             document.getElementById('freq-input').value = s.freq;
             document.getElementById('bin-input').value = s.bin;
             updateParams();
+            // Si está sonando, se actualiza solo. Si no, espera al play.
         }
 
         function deleteSession(index) {
-            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional') || '[]');
+            let sessions = JSON.parse(localStorage.getItem('farmacia_vibracional_v3') || '[]');
             sessions.splice(index, 1);
-            localStorage.setItem('farmacia_vibracional', JSON.stringify(sessions));
+            localStorage.setItem('farmacia_vibracional_v3', JSON.stringify(sessions));
             renderSessions();
         }
 
-        // Iniciar lista al cargar
+        // Cargar botiquín al iniciar
         renderSessions();
     </script>
 </body>

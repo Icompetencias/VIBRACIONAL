@@ -1,33 +1,183 @@
-// Reemplaza tu lógica de inicio de audio con algo similar a esto:
-function playAudio() {
-    const freqInput = document.getElementById('freq-input').value;
-    const frequencies = freqInput.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
-    const binauralGap = parseFloat(document.getElementById('bin-input').value) || 0;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resonancia Armónica Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input[type=range] { accent-color: #6366f1; cursor: pointer; }
+        .session-card { border-left: 5px solid #6366f1; transition: all 0.2s; }
+        .session-card:active { transform: scale(0.98); }
+        .freq-btn { transition: all 0.2s; font-size: 10px; font-weight: bold; }
+        .freq-btn:active { transform: scale(0.9); }
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
-    // Detener audio previo si existe
-    stopAudio();
+    <div id="pin-screen" class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center">
+        <h1 class="text-2xl font-black mb-6 italic tracking-tighter">ACCESO PRIVADO</h1>
+        <input type="password" id="pin-input" placeholder="PIN" class="w-full text-center text-4xl p-4 border-2 rounded-2xl mb-6 outline-none focus:border-indigo-500 font-mono">
+        <button onclick="checkPin()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl">ENTRAR AL SISTEMA</button>
+    </div>
 
-    frequencies.forEach(freq => {
-        // Crear oscilador para el oído izquierdo (Frecuencia base)
-        const oscL = audioCtx.createOscillator();
-        const panL = audioCtx.createStereoPanner();
-        panL.pan.value = -1;
-        oscL.frequency.value = freq;
-        
-        // Crear oscilador para el oído derecho (Frecuencia + Separación Binaural)
-        const oscR = audioCtx.createOscillator();
-        const panR = audioCtx.createStereoPanner();
-        panR.pan.value = 1;
-        oscR.frequency.value = freq + binauralGap;
+    <div id="main-app" class="hidden w-full max-w-md bg-slate-50 rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white/10">
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-black italic uppercase">Resonancia Armónica</h1>
+            <p class="text-[10px] tracking-widest opacity-80 font-bold">BIO-FRECUENCIAS POLIFÓNICAS</p>
+        </div>
 
-        // Conectar al volumen master y reproducir
-        oscL.connect(panL).connect(masterGain);
-        oscR.connect(panR).connect(masterGain);
-        
-        oscL.start();
-        oscR.start();
-        
-        // Guardar referencias para poder detenerlas luego
-        activeOscillators.push(oscL, oscR);
-    });
-}
+        <div class="p-5 space-y-4">
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="addFreq(396)" class="freq-btn p-2 bg-red-50 text-red-700 border border-red-100 rounded-lg">UT 396Hz</button>
+                <button onclick="addFreq(417)" class="freq-btn p-2 bg-orange-50 text-orange-700 border border-orange-100 rounded-lg">RE 417Hz</button>
+                <button onclick="addFreq(528)" class="freq-btn p-2 bg-yellow-50 text-yellow-700 border border-yellow-100 rounded-lg">MI 528Hz</button>
+                <button onclick="addFreq(639)" class="freq-btn p-2 bg-green-50 text-green-700 border border-green-100 rounded-lg">FA 639Hz</button>
+                <button onclick="addFreq(741)" class="freq-btn p-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg">SOL 741Hz</button>
+                <button onclick="addFreq(852)" class="freq-btn p-2 bg-purple-50 text-purple-700 border border-purple-100 rounded-lg">LA 852Hz</button>
+                <button onclick="addFreq(7.83)" class="freq-btn p-2 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg col-span-3">🌍 SCHUMANN 7.83 HZ</button>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-4">
+                <label class="text-[9px] font-bold text-indigo-400 uppercase block text-center mb-1">Frecuencias (sep. por comas)</label>
+                <input type="text" id="freq-input" value="440, 528" 
+                       class="bg-transparent w-full text-2xl font-mono text-indigo-400 outline-none text-center border-b border-indigo-900 pb-1">
+                <button onclick="clearFreqs()" class="text-[8px] text-slate-500 w-full mt-1 uppercase font-bold">Limpiar todo</button>
+            </div>
+
+            <div class="space-y-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Volumen Master</span> <span id="vol-txt">50%</span></div>
+                    <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateParams()" class="w-full">
+                </div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Separación Binaural</span> <span id="bin-txt">0%</span></div>
+                    <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateParams()" class="w-full">
+                </div>
+            </div>
+
+            <button id="play-btn" onclick="toggleTerapia()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl text-xl font-black shadow-xl active:scale-95 transition-all">START TREATMENT</button>
+
+            <div class="pt-4 border-t border-slate-200">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1">📂 Mis Protocolos Guardados</h2>
+                    <button onclick="saveSession()" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-bold">GUARDAR ACTUAL</button>
+                </div>
+                <input type="text" id="session-name" placeholder="Nombre del protocolo..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm mb-3 outline-none">
+                
+                <div id="sessions-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PIN = "AGUSTIN";
+        let audioCtx = null, oscillators = [], isRunning = false;
+
+        function checkPin() {
+            if(document.getElementById('pin-input').value.toUpperCase() === PIN) {
+                document.getElementById('pin-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            }
+        }
+
+        function addFreq(val) {
+            let input = document.getElementById('freq-input');
+            let current = input.value.split(',').map(v => v.trim()).filter(v => v !== "");
+            if(!current.includes(val.toString())) current.push(val);
+            input.value = current.join(', ');
+            if(isRunning) { stopAll(); playAll(); }
+        }
+
+        function clearFreqs() { 
+            document.getElementById('freq-input').value = ""; 
+            if(isRunning) stopAll();
+        }
+
+        function updateParams() {
+            document.getElementById('vol-txt').innerText = Math.round(document.getElementById('vol-input').value * 100) + "%";
+            document.getElementById('bin-txt').innerText = Math.round((document.getElementById('bin-input').value / 20) * 100) + "%";
+            if (isRunning) { stopAll(); playAll(); }
+        }
+
+        function stopAll() {
+            oscillators.forEach(o => { try { o.osc.stop(); } catch(e) {} });
+            oscillators = [];
+        }
+
+        function playAll() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const freqs = document.getElementById('freq-input').value.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
+            const masterVol = parseFloat(document.getElementById('vol-input').value);
+            const bin = parseFloat(document.getElementById('bin-input').value);
+
+            freqs.forEach(f => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f + bin, audioCtx.currentTime);
+                gain.gain.setValueAtTime(masterVol / (freqs.length || 1), audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                oscillators.push({osc, gain});
+            });
+        }
+
+        function toggleTerapia() {
+            const btn = document.getElementById('play-btn');
+            if (!isRunning) {
+                isRunning = true; playAll();
+                btn.innerText = "STOP TREATMENT"; btn.classList.replace('bg-indigo-600', 'bg-red-600');
+            } else {
+                isRunning = false; stopAll();
+                btn.innerText = "START TREATMENT"; btn.classList.replace('bg-red-600', 'bg-indigo-600');
+            }
+        }
+
+        function saveSession() {
+            const name = document.getElementById('session-name').value || "Protocolo Nuevo";
+            const freqs = document.getElementById('freq-input').value;
+            const bin = document.getElementById('bin-input').value;
+            
+            let sessions = JSON.parse(localStorage.getItem('resonancia_pro') || '[]');
+            sessions.unshift({ name, freqs, bin }); // El último guardado aparece primero
+            localStorage.setItem('resonancia_pro', JSON.stringify(sessions));
+            document.getElementById('session-name').value = "";
+            renderSessions();
+        }
+
+        function renderSessions() {
+            const sessions = JSON.parse(localStorage.getItem('resonancia_pro') || '[]');
+            document.getElementById('sessions-list').innerHTML = sessions.map((s, i) => `
+                <div class="session-card bg-white p-3 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
+                    <div class="cursor-pointer flex-1" onclick="loadSession(${i})">
+                        <p class="font-black text-[10px] text-slate-800 uppercase tracking-tight">${s.name}</p>
+                        <p class="text-[8px] text-indigo-600 font-mono font-bold">${s.freqs} Hz</p>
+                    </div>
+                    <button onclick="deleteSession(${i})" class="text-slate-300 hover:text-red-500 font-bold px-2">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function loadSession(i) {
+            const sessions = JSON.parse(localStorage.getItem('resonancia_pro') || '[]');
+            document.getElementById('freq-input').value = sessions[i].freqs;
+            document.getElementById('bin-input').value = sessions[i].bin;
+            updateParams();
+        }
+
+        function deleteSession(i) {
+            let sessions = JSON.parse(localStorage.getItem('resonancia_pro') || '[]');
+            sessions.splice(i, 1);
+            localStorage.setItem('resonancia_pro', JSON.stringify(sessions));
+            renderSessions();
+        }
+
+        renderSessions();
+    </script>
+</body>
+</html>

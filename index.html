@@ -8,26 +8,26 @@
     <style>
         input[type=range] { accent-color: #6366f1; cursor: pointer; }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .session-card { border-left: 4px solid #6366f1; transition: all 0.2s; }
+        .session-card { border-left: 4px solid #6366f1; transition: all 0.2s; cursor: pointer; }
         .session-card:active { transform: scale(0.95); }
-        .freq-btn { transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .freq-btn { transition: all 0.2s; border: 1px solid #e2e8f0; text-transform: uppercase; font-weight: bold; font-size: 9px; }
         .freq-btn:active { transform: scale(0.9); background-color: #eef2ff; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 to-indigo-950 min-h-screen flex items-center justify-center p-4 font-sans">
+<body class="bg-gradient-to-br from-slate-900 to-indigo-950 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
     <div id="pin-screen" class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center glass-card">
         <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔐</div>
-        <h1 class="text-2xl font-black text-slate-800 mb-2 italic">ACCESO PRIVADO</h1>
-        <p class="text-slate-500 text-sm mb-6 font-medium">Laboratorio de Bio-Resonancia</p>
-        <input type="password" id="pin-input" placeholder="••••" class="w-full text-center text-4xl tracking-[0.5em] p-4 border-2 border-slate-100 rounded-2xl mb-6 outline-none focus:border-indigo-500 transition-all font-mono">
-        <button onclick="checkPin()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl hover:bg-indigo-700 active:scale-95 transition-all tracking-widest">ENTRAR</button>
+        <h1 class="text-2xl font-black mb-2 italic">ACCESO PRIVADO</h1>
+        <p class="text-slate-500 text-sm mb-6">Laboratorio de Bio-Resonancia</p>
+        <input type="password" id="pin-input" placeholder="••••" class="w-full text-center text-4xl tracking-[0.5em] p-4 border-2 border-slate-100 rounded-2xl mb-6 outline-none focus:border-indigo-500 font-mono">
+        <button onclick="checkPin()" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">ENTRAR</button>
         <p id="pin-error" class="text-red-500 text-xs mt-4 hidden font-bold">⚠️ PIN INCORRECTO</p>
     </div>
 
     <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-white/20">
         <div class="bg-indigo-600 p-8 text-white text-center relative">
-            <h1 class="text-2xl font-black italic tracking-tighter">FARMACIA VIBRACIONAL</h1>
+            <h1 class="text-2xl font-black italic tracking-tighter uppercase">Farmacia Vibracional</h1>
             <div class="flex items-center justify-center gap-2 mt-1">
                 <div id="status-light" class="w-2 h-2 rounded-full bg-red-400"></div>
                 <span class="text-[10px] uppercase font-bold tracking-[0.2em] opacity-80">Bio-Resonancia Activa</span>
@@ -36,30 +36,31 @@
 
         <div class="p-6 space-y-6">
             <div class="grid grid-cols-3 gap-2">
-                <button onclick="setFreq(396)" class="freq-btn text-[9px] font-bold p-3 bg-slate-50 rounded-xl uppercase">UT 396Hz</button>
-                <button onclick="setFreq(417)" class="freq-btn text-[9px] font-bold p-3 bg-slate-50 rounded-xl uppercase">RE 417Hz</button>
-                <button onclick="setFreq(528)" class="freq-btn text-[9px] font-bold p-3 bg-indigo-50 border-indigo-200 border rounded-xl uppercase text-indigo-700">MI 528Hz</button>
-                <button onclick="setFreq(639)" class="freq-btn text-[9px] font-bold p-3 bg-slate-50 rounded-xl uppercase">FA 639Hz</button>
-                <button onclick="setFreq(741)" class="freq-btn text-[9px] font-bold p-3 bg-slate-50 rounded-xl uppercase">SOL 741Hz</button>
-                <button onclick="setFreq(852)" class="freq-btn text-[9px] font-bold p-3 bg-slate-50 rounded-xl uppercase">LA 852Hz</button>
+                <button onclick="setFreq(396)" class="freq-btn p-3 bg-slate-50 rounded-xl">UT 396Hz</button>
+                <button onclick="setFreq(417)" class="freq-btn p-3 bg-slate-50 rounded-xl">RE 417Hz</button>
+                <button onclick="setFreq(528)" class="freq-btn p-3 bg-indigo-50 border-indigo-200 border rounded-xl text-indigo-700">MI 528Hz</button>
+                <button onclick="setFreq(639)" class="freq-btn p-3 bg-slate-50 rounded-xl">FA 639Hz</button>
+                <button onclick="setFreq(741)" class="freq-btn p-3 bg-slate-50 rounded-xl">SOL 741Hz</button>
+                <button onclick="setFreq(852)" class="freq-btn p-3 bg-slate-50 rounded-xl">LA 852Hz</button>
+                <button onclick="setFreq(7.83)" class="freq-btn p-3 bg-emerald-50 border-emerald-200 border rounded-xl text-emerald-700 col-span-3 mt-1">🌍 Schumann 7.83Hz</button>
             </div>
 
             <div class="bg-slate-900 rounded-[2rem] p-6 text-center shadow-inner border-b-4 border-indigo-500/30">
-                <label class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1 block">Frecuencia Principal</label>
+                <label class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block">Frecuencia Principal</label>
                 <input type="number" id="freq-input" value="528" step="0.01" oninput="updateParams()" 
                        class="bg-transparent w-full text-5xl font-mono text-indigo-400 outline-none text-center">
-                <div class="text-indigo-800 text-[10px] font-black tracking-widest mt-1 uppercase">Hertz (Hz)</div>
+                <div class="text-indigo-800 text-[10px] font-black uppercase mt-1 tracking-widest">Hertz (Hz)</div>
             </div>
 
             <div class="space-y-4 px-2">
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
                         <span>Volumen Master</span> <span id="vol-txt" class="text-indigo-600">60%</span>
                     </div>
                     <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.6" oninput="updateParams()" class="w-full">
                 </div>
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
                         <span>Separación Binaural</span> <span id="bin-txt" class="text-indigo-600">0%</span>
                     </div>
                     <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateParams()" class="w-full">
@@ -67,15 +68,15 @@
             </div>
 
             <button id="play-btn" onclick="toggleTerapia()" 
-                    class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-2xl active:scale-95 transition-all tracking-tighter">
+                    class="w-full py-6 bg-slate-900 text-white rounded-[2rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
                 INICIAR TERAPIA
             </button>
 
             <div class="pt-4 border-t border-slate-100">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Mi Botiquín Personal</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3">Mi Botiquín Personal (Memorias)</label>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="session-name" placeholder="Nombre (ej: Rinitis)" class="flex-1 bg-slate-50 border rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 ring-indigo-100">
-                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-6 rounded-2xl font-bold shadow-md">+</button>
+                    <button onclick="saveSession()" class="bg-indigo-600 text-white px-6 rounded-2xl font-bold shadow-md hover:bg-indigo-700">+</button>
                 </div>
                 <div id="sessions-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
             </div>
@@ -83,7 +84,7 @@
     </div>
 
     <script>
-        const MI_PIN = "AGUSTIN"; // <--- TU CLAVE
+        const MI_PIN = "AGUSTIN"; 
         let audioCtx = null, mainOsc = null, mainGain = null, isRunning = false;
 
         function checkPin() {
@@ -150,6 +151,7 @@
             }
         }
 
+        // --- SISTEMA DE MEMORIA (GUARDAR FRECUENCIAS) ---
         function saveSession() {
             const nameInput = document.getElementById('session-name');
             if (!nameInput.value) return;
@@ -158,38 +160,38 @@
                 freq: document.getElementById('freq-input').value, 
                 bin: document.getElementById('bin-input').value 
             };
-            let saved = JSON.parse(localStorage.getItem('farmacia_v_final') || '[]');
+            let saved = JSON.parse(localStorage.getItem('farmacia_v_gold') || '[]');
             saved.push(session);
-            localStorage.setItem('farmacia_v_final', JSON.stringify(saved));
+            localStorage.setItem('farmacia_v_gold', JSON.stringify(saved));
             nameInput.value = "";
             renderSessions();
         }
 
         function renderSessions() {
             const list = document.getElementById('sessions-list');
-            const saved = JSON.parse(localStorage.getItem('farmacia_v_final') || '[]');
+            const saved = JSON.parse(localStorage.getItem('farmacia_v_gold') || '[]');
             list.innerHTML = saved.map((s, i) => `
-                <div class="session-card bg-slate-50 p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
-                    <div class="cursor-pointer flex-1" onclick="loadSession(${i})">
+                <div class="session-card bg-slate-50 p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100" onclick="loadSession(${i})">
+                    <div class="flex-1">
                         <p class="font-black text-xs text-slate-700 uppercase tracking-tight">${s.name}</p>
                         <p class="text-[10px] text-indigo-600 font-mono font-bold">${s.freq}Hz + ${s.bin}Hz</p>
                     </div>
-                    <button onclick="deleteSession(${i})" class="text-slate-300 hover:text-red-500 font-bold text-xl px-2">✕</button>
+                    <button onclick="event.stopPropagation(); deleteSession(${i})" class="text-slate-300 hover:text-red-500 font-bold text-xl px-2">✕</button>
                 </div>
             `).join('');
         }
 
         function loadSession(i) {
-            const saved = JSON.parse(localStorage.getItem('farmacia_v_final') || '[]');
+            const saved = JSON.parse(localStorage.getItem('farmacia_v_gold') || '[]');
             document.getElementById('freq-input').value = saved[i].freq;
             document.getElementById('bin-input').value = saved[i].bin;
             updateParams();
         }
 
         function deleteSession(i) {
-            let saved = JSON.parse(localStorage.getItem('farmacia_v_final') || '[]');
+            let saved = JSON.parse(localStorage.getItem('farmacia_v_gold') || '[]');
             saved.splice(i, 1);
-            localStorage.setItem('farmacia_v_final', JSON.stringify(saved));
+            localStorage.setItem('farmacia_v_gold', JSON.stringify(saved));
             renderSessions();
         }
 

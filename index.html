@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonancia Pro V6</title>
+    <title>Resonancia Pro V7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        input[type=range] { accent-color: #0f172a; }
+        input[type=range] { accent-color: #0f172a; cursor: pointer; }
         .session-card { transition: 0.3s; cursor: pointer; border: 1px solid #f1f5f9; }
         .freq-btn { transition: 0.2s; border: 1px solid #f1f5f9; font-weight: 600; }
         .freq-btn:active { transform: scale(0.95); background: #0f172a; color: white; }
@@ -16,14 +16,10 @@
 <body class="bg-[#f8fafc] min-h-screen flex items-center justify-center p-4">
 
     <div id="pin-screen" class="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl text-center border border-slate-100">
-        <h1 class="text-3xl font-black text-slate-900 mb-2 italic uppercase">Resonancia</h1>
-        <p class="text-slate-400 text-[10px] mb-8 font-bold tracking-[0.3em] uppercase">Acceso al Laboratorio</p>
-        
-        <input type="text" id="pin-input" placeholder="ESCRIBE TU PIN" 
-               class="w-full text-center text-2xl p-4 bg-slate-50 rounded-2xl mb-6 outline-none border-2 border-transparent focus:border-indigo-500 transition-all font-bold uppercase">
-        
-        <button onclick="checkPin()" class="w-full py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all">ENTRAR AHORA</button>
-        <p id="msg-error" class="text-red-500 text-xs mt-4 font-bold hidden uppercase">❌ Pin Incorrecto</p>
+        <h1 class="text-3xl font-black text-slate-900 mb-2 italic uppercase tracking-tighter">Resonancia</h1>
+        <p class="text-slate-400 text-[10px] mb-8 font-bold tracking-[0.3em] uppercase italic">Laboratorio Privado</p>
+        <input type="password" id="pin-input" placeholder="PIN" class="w-full text-center text-4xl p-4 bg-slate-50 rounded-2xl mb-8 outline-none border-2 border-transparent focus:border-indigo-500 transition-all font-mono">
+        <button onclick="checkPin()" class="w-full py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all">ACCEDER</button>
     </div>
 
     <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl overflow-hidden relative border border-white">
@@ -33,12 +29,10 @@
                 <h1 class="text-2xl font-black text-slate-900 italic leading-none uppercase">Resonancia</h1>
                 <div class="flex items-center gap-2 mt-2 font-bold text-[10px] text-slate-400">
                     <div id="status-light" class="w-2 h-2 rounded-full bg-slate-200"></div>
-                    <span id="timer-display">LISTO PARA TERAPIA</span>
+                    <span id="timer-display">LISTO</span>
                 </div>
             </div>
-            <button onclick="logout()" class="p-3 bg-slate-50 rounded-full text-slate-400 hover:text-red-500 shadow-sm">
-                SALIR
-            </button>
+            <button onclick="logout()" class="p-2 bg-slate-50 rounded-xl text-[10px] font-bold text-slate-400 uppercase">Salir</button>
         </div>
 
         <div class="p-8 pt-2 space-y-6">
@@ -52,26 +46,40 @@
                 <button onclick="setSchumann()" class="col-span-3 py-4 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase mt-1">🌍 Schumann 200/207.83</button>
             </div>
 
-            <div class="bg-slate-50 rounded-[2rem] p-6 text-center border shadow-inner">
+            <div class="bg-slate-50 rounded-[2.5rem] p-6 text-center border shadow-inner">
                 <input type="text" id="freq-input" value="528" class="bg-transparent w-full text-4xl font-black text-slate-900 outline-none text-center">
+                <button onclick="clearFreqs()" class="text-[8px] text-slate-300 font-bold uppercase mt-2">Limpiar</button>
             </div>
 
             <div class="space-y-4">
-                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase"><span>Vol</span> <span id="vol-txt">50%</span></div>
-                <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateUI()" class="w-full">
-                
-                <div class="grid grid-cols-2 gap-4 text-[10px] font-bold text-slate-400 uppercase">
-                    <div>Binaural: <span id="bin-txt">0%</span><input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateUI()" class="w-full"></div>
-                    <div>Tiempo: <span id="time-txt">15m</span><input type="range" id="time-input" min="5" max="60" step="5" value="15" oninput="updateUI()" class="w-full"></div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Volumen</span> <span id="vol-txt">50%</span></div>
+                    <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateUI()" class="w-full">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Binaural</span> <span id="bin-txt">0%</span></div>
+                        <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateUI()" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Paneo (Ancho)</span> <span id="pan-txt">84%</span></div>
+                        <input type="range" id="pan-input" min="0" max="1" step="0.01" value="0.84" oninput="updateUI()" class="w-full">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1"><span>Tiempo</span> <span id="time-txt">15m</span></div>
+                    <input type="range" id="time-input" min="5" max="60" step="5" value="15" oninput="updateUI()" class="w-full">
                 </div>
             </div>
 
             <button id="play-btn" onclick="toggleTerapia()" class="w-full py-6 bg-slate-900 text-white rounded-3xl text-xl font-bold active:scale-95 transition-all shadow-xl">INICIAR</button>
 
             <div class="pt-6 border-t border-slate-50">
-                <div class="flex items-center justify-between mb-4 text-[10px] font-bold text-slate-400">
-                    <span>PROTOCOLOS</span>
-                    <button onclick="saveSession()" class="bg-slate-100 px-3 py-1 rounded-full text-slate-900">+ GUARDAR</button>
+                <div class="flex items-center justify-between mb-4 text-[10px] font-bold text-slate-400 uppercase">
+                    <span>Protocolos</span>
+                    <button onclick="saveSession()" class="bg-slate-100 px-3 py-1 rounded-full text-slate-900">+ Guardar</button>
                 </div>
                 <input type="text" id="session-name" placeholder="Nombre..." class="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm mb-4 outline-none">
                 <div id="sessions-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
@@ -80,62 +88,72 @@
     </div>
 
     <script>
-        // EL PIN SIEMPRE SERÁ AGUSTIN
+        const PIN = "AGUSTIN";
+        let audioCtx = null, oscillators = [], isRunning = false, timerInterval = null;
+
         function checkPin() {
-            const input = document.getElementById('pin-input').value.trim().toUpperCase();
-            if(input === "AGUSTIN") {
+            if(document.getElementById('pin-input').value.toUpperCase() === PIN) {
                 document.getElementById('pin-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-            } else {
-                document.getElementById('msg-error').classList.remove('hidden');
-                document.getElementById('pin-input').value = "";
             }
         }
 
-        let audioCtx = null, oscillators = [], isRunning = false, timerInterval = null;
-
         function logout() { location.reload(); }
-        function setSchumann() { document.getElementById('freq-input').value = "200, 207.83"; document.getElementById('bin-input').value = "0"; updateUI(); }
-        function addFreq(v) { 
+
+        function updateUI() {
+            document.getElementById('vol-txt').innerText = Math.round(document.getElementById('vol-input').value * 100) + "%";
+            document.getElementById('bin-txt').innerText = Math.round((document.getElementById('bin-input').value / 20) * 100) + "%";
+            document.getElementById('pan-txt').innerText = Math.round(document.getElementById('pan-input').value * 100) + "%";
+            document.getElementById('time-txt').innerText = document.getElementById('time-input').value + "m";
+            if(isRunning) restartAudio();
+        }
+
+        function setSchumann() {
+            document.getElementById('freq-input').value = "200, 207.83";
+            document.getElementById('bin-input').value = "0";
+            updateUI();
+        }
+
+        function addFreq(v) {
             let i = document.getElementById('freq-input');
             let f = i.value.split(',').map(x => x.trim()).filter(x => x !== "");
             if(!f.includes(v.toString())) f.push(v);
             i.value = f.join(', ');
             if(isRunning) restartAudio();
         }
+
         function clearFreqs() { document.getElementById('freq-input').value = ""; if(isRunning) stopAll(); }
-        function updateUI() {
-            document.getElementById('vol-txt').innerText = Math.round(document.getElementById('vol-input').value * 100) + "%";
-            document.getElementById('bin-txt').innerText = Math.round((document.getElementById('bin-input').value / 20) * 100) + "%";
-            document.getElementById('time-txt').innerText = document.getElementById('time-input').value + "m";
-            if(isRunning) restartAudio();
-        }
-        function stopAll() {
-            oscillators.forEach(o => o.stop());
-            oscillators = [];
-            clearInterval(timerInterval);
-            document.getElementById('timer-display').innerText = "SISTEMA LISTO";
-            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-slate-200";
-        }
-        function restartAudio() { stopAll(); playAll(); }
+
         function playAll() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+
             const freqs = document.getElementById('freq-input').value.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
             const vol = parseFloat(document.getElementById('vol-input').value) / (freqs.length || 1);
             const bin = parseFloat(document.getElementById('bin-input').value);
+            const panVal = parseFloat(document.getElementById('pan-input').value);
+
             freqs.forEach(f => {
                 const oL = audioCtx.createOscillator(); const pL = audioCtx.createStereoPanner();
                 const oR = audioCtx.createOscillator(); const pR = audioCtx.createStereoPanner();
                 const g = audioCtx.createGain();
-                oL.frequency.value = f; pL.pan.value = -1;
-                oR.frequency.value = f + bin; pR.pan.value = 1;
+
+                oL.frequency.value = f;
+                pL.pan.value = -panVal; // Paneo Izquierdo proporcional al slider
+
+                oR.frequency.value = f + bin;
+                pR.pan.value = panVal; // Paneo Derecho proporcional al slider
+
                 g.gain.value = vol;
-                oL.connect(pL).connect(g); oR.connect(pR).connect(g); g.connect(audioCtx.destination);
-                oL.start(); oR.start(); oscillators.push(oL, oR);
+                oL.connect(pL).connect(g); oR.connect(pR).connect(g);
+                g.connect(audioCtx.destination);
+
+                oL.start(); oR.start();
+                oscillators.push(oL, oR);
             });
             startTimer();
         }
+
         function startTimer() {
             let t = parseInt(document.getElementById('time-input').value) * 60;
             document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-indigo-500 animate-pulse";
@@ -146,42 +164,63 @@
                 t--;
             }, 1000);
         }
+
         function toggleTerapia() {
             const b = document.getElementById('play-btn');
             if (!isRunning) {
                 if(!document.getElementById('freq-input').value) return;
-                isRunning = true; playAll(); b.innerText = "PARAR"; b.className = "w-full py-6 bg-red-500 text-white rounded-3xl text-xl font-bold active:scale-95 transition-all shadow-xl";
+                isRunning = true; playAll();
+                b.innerText = "PARAR"; b.classList.replace('bg-slate-900', 'bg-red-500');
             } else {
-                isRunning = false; stopAll(); b.innerText = "INICIAR"; b.className = "w-full py-6 bg-slate-900 text-white rounded-3xl text-xl font-bold active:scale-95 transition-all shadow-xl";
+                isRunning = false; stopAll();
+                b.innerText = "INICIAR"; b.classList.replace('bg-red-500', 'bg-slate-900');
             }
         }
+
+        function stopAll() {
+            oscillators.forEach(o => { try { o.stop(); } catch(e) {} });
+            oscillators = [];
+            clearInterval(timerInterval);
+            document.getElementById('timer-display').innerText = "LISTO";
+            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-slate-200";
+        }
+
+        function restartAudio() { stopAll(); playAll(); }
+
         function saveSession() {
-            const n = document.getElementById('session-name').value || "Protocolo " + new Date().toLocaleTimeString();
-            const f = document.getElementById('freq-input').value, b = document.getElementById('bin-input').value, t = document.getElementById('time-input').value;
-            let s = JSON.parse(localStorage.getItem('res_v6') || '[]');
-            s.unshift({ n, f, b, t });
-            localStorage.setItem('res_v6', JSON.stringify(s));
+            const n = document.getElementById('session-name').value || "Protocolo";
+            const f = document.getElementById('freq-input').value;
+            const b = document.getElementById('bin-input').value;
+            const p = document.getElementById('pan-input').value;
+            const t = document.getElementById('time-input').value;
+            let s = JSON.parse(localStorage.getItem('res_v7_final') || '[]');
+            s.unshift({ n, f, b, p, t });
+            localStorage.setItem('res_v7_final', JSON.stringify(s));
             document.getElementById('session-name').value = ""; renderSessions();
         }
+
         function renderSessions() {
-            const s = JSON.parse(localStorage.getItem('res_v6') || '[]');
+            const s = JSON.parse(localStorage.getItem('res_v7_final') || '[]');
             document.getElementById('sessions-list').innerHTML = s.map((x, i) => `
-                <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center" onclick="loadSession(${i})">
+                <div class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center session-card" onclick="loadSession(${i})">
                     <div class="flex-1"><p class="font-bold text-[10px] text-slate-800 uppercase">${x.n}</p><p class="text-[9px] text-indigo-500 font-bold">${x.f} HZ</p></div>
                     <button onclick="event.stopPropagation(); deleteSession(${i})" class="text-slate-300 px-2 text-xl">✕</button>
                 </div>
             `).join('');
         }
+
         function loadSession(i) {
-            const s = JSON.parse(localStorage.getItem('res_v6') || '[]');
+            const s = JSON.parse(localStorage.getItem('res_v7_final') || '[]');
             document.getElementById('freq-input').value = s[i].f;
             document.getElementById('bin-input').value = s[i].b;
+            document.getElementById('pan-input').value = s[i].p || 0.84;
             document.getElementById('time-input').value = s[i].t;
             updateUI();
         }
+
         function deleteSession(i) {
-            let s = JSON.parse(localStorage.getItem('res_v6') || '[]');
-            s.splice(i, 1); localStorage.setItem('res_v6', JSON.stringify(s)); renderSessions();
+            let s = JSON.parse(localStorage.getItem('res_v7_final') || '[]');
+            s.splice(i, 1); localStorage.setItem('res_v7_final', JSON.stringify(s)); renderSessions();
         }
         renderSessions();
     </script>

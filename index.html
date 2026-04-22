@@ -8,37 +8,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); }
-        input[type=range] { accent-color: #6366f1; height: 4px; }
-        .session-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .session-card:active { transform: scale(0.97); background: #eef2ff; }
-        .freq-btn { transition: all 0.2s ease; border: 1px solid #f1f5f9; }
-        .freq-btn:active { transform: scale(0.92); background: #6366f1; color: white; }
-        @keyframes pulse-custom { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .animate-pulse-custom { animation: pulse-custom 2s infinite; }
+        input[type=range] { accent-color: #0f172a; height: 4px; }
+        .session-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #f1f5f9; }
+        .session-card:active { transform: scale(0.97); background: #f8fafc; }
+        .freq-btn { transition: all 0.2s ease; border: 1px solid #f1f5f9; font-weight: 600; }
+        .freq-btn:active { transform: scale(0.92); background: #0f172a; color: white; }
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .animate-soft { animation: pulse-soft 2s infinite; }
     </style>
 </head>
-<body class="bg-[#f0f2f5] min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#f8fafc] min-h-screen flex items-center justify-center p-4">
 
-    <div id="pin-screen" class="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl text-center border border-white">
-        <h1 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tighter italic">RESONANCIA</h1>
-        <p class="text-slate-400 text-sm mb-8 font-light tracking-widest uppercase">Laboratorio Privado</p>
-        <input type="password" id="pin-input" placeholder="••••" class="w-full text-center text-5xl p-4 bg-slate-50 rounded-3xl mb-8 outline-none focus:ring-2 ring-indigo-100 transition-all font-mono tracking-[0.2em]">
-        <button onclick="checkPin()" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-bold text-lg hover:bg-black transition-all active:scale-95 shadow-xl">ACCEDER</button>
+    <div id="pin-screen" class="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl text-center">
+        <h1 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tighter italic uppercase">Resonancia</h1>
+        <p class="text-slate-400 text-[10px] mb-8 font-bold tracking-[0.3em] uppercase">Laboratorio Privado</p>
+        <input type="password" id="pin-input" placeholder="••••" class="w-full text-center text-4xl p-4 bg-slate-50 rounded-3xl mb-8 outline-none focus:ring-2 ring-slate-100 transition-all font-mono tracking-[0.2em]">
+        <button onclick="checkPin()" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-bold text-lg shadow-xl active:scale-95 transition-all">ACCEDER</button>
     </div>
 
-    <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl overflow-hidden border border-white relative">
+    <div id="main-app" class="hidden w-full max-w-md bg-white rounded-[3.5rem] shadow-2xl overflow-hidden relative border border-white">
         
         <div class="p-8 pb-4 flex justify-between items-start">
             <div>
-                <h1 class="text-2xl font-black text-slate-900 italic leading-none">RESONANCIA</h1>
+                <h1 class="text-2xl font-black text-slate-900 italic leading-none uppercase">Resonancia</h1>
                 <div class="flex items-center gap-2 mt-2">
-                    <div id="status-light" class="w-2 h-2 rounded-full bg-red-400"></div>
-                    <span id="timer-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistema Inactivo</span>
+                    <div id="status-light" class="w-2 h-2 rounded-full bg-slate-200"></div>
+                    <span id="timer-display" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistema Listo</span>
                 </div>
             </div>
-            <button onclick="logout()" class="p-3 bg-slate-50 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <button onclick="logout()" class="p-3 bg-slate-50 rounded-full text-slate-400 hover:text-red-500 transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
         </div>
 
@@ -51,27 +50,27 @@
                 <button onclick="addFreq(639)" class="freq-btn py-3 bg-white rounded-2xl text-[10px] text-slate-600 shadow-sm">FA 639</button>
                 <button onclick="addFreq(741)" class="freq-btn py-3 bg-white rounded-2xl text-[10px] text-slate-600 shadow-sm">SOL 741</button>
                 <button onclick="addFreq(852)" class="freq-btn py-3 bg-white rounded-2xl text-[10px] text-slate-600 shadow-sm">LA 852</button>
-                <button onclick="setSchumann()" class="col-span-3 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-bold shadow-lg shadow-indigo-200 uppercase tracking-widest mt-1">🌍 Schumann 200/207.83</button>
+                <button onclick="setSchumann()" class="col-span-3 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-bold shadow-lg uppercase tracking-widest mt-1">🌍 Schumann 200 / 207.83</button>
             </div>
 
-            <div class="bg-slate-50 rounded-[2.5rem] p-6 text-center">
+            <div class="bg-slate-50 rounded-[2.5rem] p-6 text-center border border-slate-100 shadow-inner">
                 <input type="text" id="freq-input" value="528" 
                        class="bg-transparent w-full text-4xl font-extrabold text-slate-900 outline-none text-center mb-1">
                 <button onclick="clearFreqs()" class="text-[9px] text-slate-300 font-bold uppercase tracking-widest hover:text-red-400 transition-colors">Limpiar Laboratorio</button>
             </div>
 
-            <div class="space-y-5 px-2">
+            <div class="space-y-5 px-1">
                 <div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Master Vol</span> <span id="vol-txt" class="text-slate-900">50%</span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Volumen</span> <span id="vol-txt" class="text-slate-900 font-black">50%</span></div>
                     <input type="range" id="vol-input" min="0" max="1" step="0.01" value="0.5" oninput="updateUI()" class="w-full">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Binaural</span> <span id="bin-txt" class="text-slate-900">0%</span></div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Binaural</span> <span id="bin-txt" class="text-slate-900 font-black">0%</span></div>
                         <input type="range" id="bin-input" min="0" max="20" step="0.1" value="0" oninput="updateUI()" class="w-full">
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Tiempo</span> <span id="time-txt" class="text-slate-900">15m</span></div>
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-2"><span>Tiempo</span> <span id="time-txt" class="text-slate-900 font-black">15m</span></div>
                         <input type="range" id="time-input" min="5" max="60" step="5" value="15" oninput="updateUI()" class="w-full">
                     </div>
                 </div>
@@ -81,23 +80,27 @@
 
             <div class="pt-6 border-t border-slate-50">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-[11px] font-extrabold text-slate-300 uppercase tracking-widest">Protocolos Guardados</h2>
-                    <button onclick="saveSession()" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-4 py-2 rounded-full hover:bg-indigo-100">+ GUARDAR</button>
+                    <h2 class="text-[10px] font-extrabold text-slate-300 uppercase tracking-widest">Protocolos Guardados</h2>
+                    <button onclick="saveSession()" class="text-slate-900 text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full hover:bg-slate-200">+ GUARDAR</button>
                 </div>
-                <input type="text" id="session-name" placeholder="Nombre del protocolo..." class="w-full bg-slate-50 border-none rounded-2xl px-5 py-3 text-sm mb-4 outline-none focus:ring-2 ring-slate-100">
+                <input type="text" id="session-name" placeholder="Nombre (ej: Relax Total)" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm mb-4 outline-none focus:bg-white transition-all">
                 <div id="sessions-list" class="space-y-3 max-h-48 overflow-y-auto pr-1"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const PIN = "AGUSTIN";
+        const PIN_MASTER = "AGUSTIN";
         let audioCtx = null, oscillators = [], isRunning = false, timerInterval = null;
 
         function checkPin() {
-            if(document.getElementById('pin-input').value.toUpperCase() === PIN) {
+            const val = document.getElementById('pin-input').value.trim().toUpperCase();
+            if(val === PIN_MASTER) {
                 document.getElementById('pin-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
+            } else {
+                alert("PIN Incorrecto");
+                document.getElementById('pin-input').value = "";
             }
         }
 
@@ -119,7 +122,7 @@
             let freqs = input.value.split(',').map(v => v.trim()).filter(v => v !== "");
             if(!freqs.includes(val.toString())) freqs.push(val);
             input.value = freqs.join(', ');
-            updateUI();
+            if(isRunning) restartAudio();
         }
 
         function clearFreqs() { document.getElementById('freq-input').value = ""; if(isRunning) stopAll(); }
@@ -136,7 +139,7 @@
             oscillators = [];
             clearInterval(timerInterval);
             document.getElementById('timer-display').innerText = "Sistema Inactivo";
-            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-red-400";
+            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-slate-200";
         }
 
         function restartAudio() { stopAll(); playAll(); }
@@ -176,12 +179,12 @@
 
         function startTimer() {
             let timeLeft = parseInt(document.getElementById('time-input').value) * 60;
-            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-indigo-500 animate-pulse-custom";
+            document.getElementById('status-light').className = "w-2 h-2 rounded-full bg-slate-900 animate-soft";
             
             timerInterval = setInterval(() => {
                 let mins = Math.floor(timeLeft / 60);
                 let secs = timeLeft % 60;
-                document.getElementById('timer-display').innerText = `Terapia activa: ${mins}m ${secs}s`;
+                document.getElementById('timer-display').innerText = `Tiempo restante: ${mins}m ${secs}s`;
                 if (timeLeft <= 0) toggleTerapia();
                 timeLeft--;
             }, 1000);
@@ -190,6 +193,7 @@
         function toggleTerapia() {
             const btn = document.getElementById('play-btn');
             if (!isRunning) {
+                if(!document.getElementById('freq-input').value) return alert("Ingresa frecuencias");
                 isRunning = true; playAll();
                 btn.innerText = "DETENER"; btn.classList.replace('bg-slate-900', 'bg-red-500');
             } else {
@@ -204,28 +208,28 @@
             const bin = document.getElementById('bin-input').value;
             const time = document.getElementById('time-input').value;
             
-            let sessions = JSON.parse(localStorage.getItem('resonancia_pro_v5') || '[]');
+            let sessions = JSON.parse(localStorage.getItem('resonancia_final_gold') || '[]');
             sessions.unshift({ name, freqs, bin, time });
-            localStorage.setItem('resonancia_pro_v5', JSON.stringify(sessions));
+            localStorage.setItem('resonancia_final_gold', JSON.stringify(sessions));
             document.getElementById('session-name').value = "";
             renderSessions();
         }
 
         function renderSessions() {
-            const sessions = JSON.parse(localStorage.getItem('resonancia_pro_v5') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('resonancia_final_gold') || '[]');
             document.getElementById('sessions-list').innerHTML = sessions.map((s, i) => `
-                <div class="session-card bg-slate-50 p-5 rounded-[1.8rem] flex justify-between items-center" onclick="loadSession(${i})">
+                <div class="session-card bg-white p-5 rounded-[1.8rem] flex justify-between items-center shadow-sm" onclick="loadSession(${i})">
                     <div class="flex-1">
-                        <p class="font-bold text-xs text-slate-800 uppercase">${s.name}</p>
-                        <p class="text-[9px] text-indigo-500 font-bold">${s.freqs} Hz • ${s.time}m</p>
+                        <p class="font-bold text-xs text-slate-800 uppercase tracking-tighter">${s.name}</p>
+                        <p class="text-[9px] text-slate-400 font-bold tracking-widest mt-1">${s.freqs} HZ • ${s.time}M</p>
                     </div>
-                    <button onclick="event.stopPropagation(); deleteSession(${i})" class="text-slate-300 hover:text-red-500 font-bold text-xl px-2">✕</button>
+                    <button onclick="event.stopPropagation(); deleteSession(${i})" class="text-slate-200 hover:text-red-500 font-bold text-xl px-2">✕</button>
                 </div>
             `).join('');
         }
 
         function loadSession(i) {
-            const sessions = JSON.parse(localStorage.getItem('resonancia_pro_v5') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('resonancia_final_gold') || '[]');
             document.getElementById('freq-input').value = sessions[i].freqs;
             document.getElementById('bin-input').value = sessions[i].bin;
             document.getElementById('time-input').value = sessions[i].time || 15;
@@ -233,6 +237,12 @@
         }
 
         function deleteSession(i) {
-            let sessions = JSON.parse(localStorage.getItem('resonancia_pro_v5') || '[]');
+            let sessions = JSON.parse(localStorage.getItem('resonancia_final_gold') || '[]');
             sessions.splice(i, 1);
-            localStorage.setItem('resonancia_pro_v5', JSON.stringify(sessions));
+            localStorage.setItem('resonancia_final_gold', JSON.stringify(sessions));
+            renderSessions();
+        }
+        renderSessions();
+    </script>
+</body>
+</html>
